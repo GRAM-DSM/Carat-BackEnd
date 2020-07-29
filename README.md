@@ -2,6 +2,7 @@
 
 ## 사용 기술
 Django 2.0(Python3)
+Flask
 
 ## 역할 분리
 - **API 명세**  
