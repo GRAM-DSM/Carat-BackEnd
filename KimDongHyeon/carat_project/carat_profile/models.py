@@ -1,6 +1,16 @@
 from django.db import models
 
 
+class Users(models.Model):
+    email = models.CharField(primary_key=True, max_length=80)
+    hashed_password = models.CharField(max_length=120)
+    created_at = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'users'
+
+
 class Profiles(models.Model):
     user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
     name = models.CharField(max_length=80)
