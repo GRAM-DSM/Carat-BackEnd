@@ -4,20 +4,20 @@ from rest_framework.decorators import api_view
 
 
 @api_view(['GET'])
-def read_profile(request, email):
+def read_profile(request, email):    # 유저의 프로필 정보 가져오기
     pass
 
 
 @api_view(['PUT'])
-def update_profile(request):
+def update_profile(request):        # 유저의 프로필 정보 수정하기
     pass
 
 
 @api_view(['GET'])
-def following(request, email):
+def following(request, email):      # 유저의 팔로잉 목록 가져오기
     pass
 
 
 @api_view(['GET'])
-def followers(request, email):
+def followers(request, email):      # 유저의 팔로워 목록 가져오기
     pass
