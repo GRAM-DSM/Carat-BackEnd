@@ -39,10 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'carat_carat',
-    'carat_caring',
-    'carat_recaring',
     'carat_profile',
-    'carat_timeline',
     'carat_user',
 ]
 

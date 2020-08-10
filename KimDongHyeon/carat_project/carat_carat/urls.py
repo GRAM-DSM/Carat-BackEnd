@@ -1,7 +1,24 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
 
-urlpatterns = [
+carat_patterns = [
     path('<int:id>', views.do_carat),
     path('<int:id>/list', views.read_carat_list)
+]
+
+caring_patterns = [
+    path('', views.create_caring),
+    path('<int:id>', views.edit_caring)
+]
+
+timeline_patterns = [
+    path('', views.create_caring),
+    path('<int:id>', views.edit_caring)
+]
+
+urlpatterns = [
+    path('timeline/', include(timeline_patterns)),
+    path('caring/', include(caring_patterns)),
+    path('carat/', include(carat_patterns)),
+    path('recaring/', views.do_recaring),
 ]
