@@ -34,16 +34,6 @@ class CaratList(models.Model):
         unique_together = (('carat_user_email', 'caring'),)
 
 
-class FollowList(models.Model):
-    follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email', primary_key=True)
-    followed_user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed_user_email')
-
-    class Meta:
-        managed = False
-        db_table = 'follow_list'
-        unique_together = (('follow_user_email', 'followed_user_email'),)
-
-
 class Profiles(models.Model):
     user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
     name = models.CharField(max_length=80)
@@ -54,6 +44,16 @@ class Profiles(models.Model):
     class Meta:
         managed = False
         db_table = 'profiles'
+
+
+class FollowList(models.Model):
+    follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email', primary_key=True)
+    followed_user_email = models.ForeignKey('Profiles', models.DO_NOTHING, db_column='followed_user_email')
+
+    class Meta:
+        managed = False
+        db_table = 'follow_list'
+        unique_together = (('follow_user_email', 'followed_user_email'),)
 
 
 class Recarings(models.Model):

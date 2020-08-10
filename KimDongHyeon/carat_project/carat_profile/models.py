@@ -25,7 +25,7 @@ class Profiles(models.Model):
 
 class FollowList(models.Model):
     follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email', primary_key=True)
-    followed_user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed_user_email')
+    followed_user_email = models.ForeignKey('Profiles', models.DO_NOTHING, db_column='followed_user_email')
 
     class Meta:
         managed = False
