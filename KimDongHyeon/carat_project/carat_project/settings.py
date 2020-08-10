@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'carat_carat',
     'carat_profile',
     'carat_user',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
