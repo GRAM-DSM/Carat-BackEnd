@@ -4,6 +4,8 @@ from rest_framework.decorators import api_view
 
 
 # carat API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-2
+
 @api_view(['POST', 'DELETE'])
 def do_carat(request):
     if request.method == 'POST':     # 캐럿(좋아요) 하기
@@ -18,6 +20,8 @@ def read_carat_list(request, id):       # 캐럿 리스트 가져오기
 
 
 # caring API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
+
 @api_view(['POST'])
 def create_caring(request):      # 캐링(트윗) 생성하기
     pass
@@ -34,6 +38,8 @@ def edit_caring(request, id):
 
 
 # re-caring API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-3
+
 @api_view(['POST', 'DELETE'])
 def do_recaring(request, id):
     if request.method == 'POST':  # 리캐링(리트윗) 생성하기
@@ -43,6 +49,8 @@ def do_recaring(request, id):
 
 
 # timeline API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined
+
 @api_view(['GET'])
 def read_timeline(request):      # 타임라인 가져오기
     pass
