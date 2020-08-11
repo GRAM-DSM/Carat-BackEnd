@@ -85,8 +85,8 @@ DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.mysql',
          'NAME': 'carat',
-         'USER': '계정아이디',
-         'PASSWORD': '비밀번호',
+         'USER': 'caratid',
+         'PASSWORD': 'caratpassword',
          'HOST': '127.0.0.1',
          'PORT': '3306',
 	}
