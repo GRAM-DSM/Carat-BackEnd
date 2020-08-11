@@ -33,7 +33,8 @@ def login_decorator(func):
 class sign_up(View):
     def post(self, request):
         """ 계정 생성(회원 가입) """
-        print('이메일 :', request.POST['email'], '\n비밀번호 :', request.POST['password'],
+        print('이메일 :', request.POST['email'],
+              '\n비밀번호 :', request.POST['password'],
               '\n생성시간 :', time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())))
         try:
             if Users.objects.filter(email=request.POST['email']).exists():  # 존재하는 이메일인지 확인
