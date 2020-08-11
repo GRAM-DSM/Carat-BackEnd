@@ -9,3 +9,4 @@ class Users(models.Model):
     class Meta:
         managed = False
         db_table = 'users'
+
