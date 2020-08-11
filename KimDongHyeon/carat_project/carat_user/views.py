@@ -32,7 +32,7 @@ def login_decorator(func):
 
 class sign_up(View):
     def post(self, request):
-        """ 계정 생성(회원 가입) 메소드 """
+        """ 계정 생성(회원 가입) """
         print('이메일 :', request.POST['email'], '\n비밀번호 :', request.POST['password'],
               '\n생성시간 :', time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())))
         try:
@@ -54,21 +54,20 @@ class sign_up(View):
 
     @login_decorator
     def delete(self, request):
-        """ 계정 삭제(회원 탈퇴) 메소드 """
+        """ 계정 삭제(회원 탈퇴) """
         Users.objects.filter(email=request.user).delete()
 
 
 class sign_in(View):
     def post(self, request):
-        """ 로그인 메소드 (토큰 생성) """
+        """ 로그인 (토큰 생성) """
         try:
             if Users.objects.filter(email=request.POST['email']).exists():
-                user = Users.objects.get(email=request.POST['email'])
-
-                if bcrypt.checkpw(request.POST['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    # 토큰 생성         jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-                    token = jwt.encode({'email': request.POST['email']}, SECRET_KEY, algorithm="HS256")
-                    token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
+                if bcrypt.checkpw(request.POST['password'].encode('utf-8'),     # 비밀번호가 맞는지 검사
+                                  Users.objects.get(email=request.POST['email']).hashed_password.encode('utf-8')):
+                    # 토큰 생성 : jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
+                    # jwt.encode로 jwt 토큰을 인코딩하고, 이것을 유니코드 문자열로 디코딩
+                    token = jwt.encode({'email': request.POST['email']}, SECRET_KEY, algorithm="HS256").decode('utf-8')
                     return JsonResponse({"token": token}, status=200)
                 else:
                     return JsonResponse({"message": "비밀번호가 잘못되었습니다!(Email and password do not match.)"}, status=403)
