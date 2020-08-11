@@ -51,7 +51,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+#    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -133,18 +133,18 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 # ============== DRF JWT 설정 ====================
-# REST_FRAMEWORK = {
-#     'DEFAULT_PERMISSION_CLASSES': (
-#         'rest_framework.permissions.IsAuthenticated',
-#         'rest_framework.permissions.IsAdminUser',
-#         'rest_framework.permissions.AllowAny',
-#     ),
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
-#         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-#         'rest_framework.authentication.SessionAuthentication',
-#         'rest_framework.authentication.BasicAuthentication',
-#     ),
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.IsAdminUser',
+        'rest_framework.permissions.AllowAny',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ),
+}
 #
 # JWT_AUTH = {
 #     'JWT_SECRET_KEY': SECRET_KEY,
@@ -158,3 +158,5 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # ACCOUNT_EMAIL_REQUIRED = False
 # ACCOUNT_EMAIL_VERIFICATION = None
 # ACCOUNT_LOGOUT_ON_GET = True
+
+

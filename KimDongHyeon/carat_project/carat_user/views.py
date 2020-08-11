@@ -2,6 +2,8 @@ import json
 import bcrypt  # 암호화 용
 import jwt  # 토큰 발행용
 import time # 시간 지정용
+from django.utils import timezone
+import time
 
 from carat_project.settings import SECRET_KEY  # 토큰 발행에 사용할 secret key
 from .models import Users
@@ -31,23 +33,24 @@ def login_decorator(func):
 class sign_up(View):
     def post(self, request):
         """ 계정 생성(회원 가입) 메소드 """
-        data = json.loads(request.body)
+        print('이메일 :', request.POST['email'], '\n비밀번호 :', request.POST['password'],
+              '\n생성시간 :', time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())))
         try:
-            if Users.objects.filter(email=data['email']).exists():  # 존재하는 이메일인지 확인
-                return JsonResponse({"message": "이미 존재하는 이메일 입니다!"}, status=400)
+            if Users.objects.filter(email=request.POST['email']).exists():  # 존재하는 이메일인지 확인
+                return JsonResponse({"message": "이미 존재하는 이메일 입니다!(That email is already in use.)"}, status=409)
 
-            password = data['password'].encode('utf-8')  # (비밀번호 암호화1) 입력된 패스워드를 바이트 형태로 인코딩
+            password = request.POST['password'].encode('utf-8')  # (비밀번호 암호화1) 입력된 패스워드를 바이트 형태로 인코딩
             password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # (비밀번호 암호화2) 암호화된 비밀번호 생성
             password_crypt = password_crypt.decode('utf-8')  # (비밀번호 암호화3) DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-
+            print(f'암호화 된 비밀번호 : {password_crypt}    비밀번호 길이 :', len(password_crypt))
             Users(
-                email=data['email'],
-                password=password_crypt,    # 암호화된 비밀번호를 저장
-                created_at=time.time(),     # 현재 시간을 저장
+                email=request.POST['email'],
+                hashed_password=password_crypt,    # 암호화된 비밀번호를 저장
+                created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
             ).save()
             return HttpResponse(status=200)
         except KeyError:
-            return JsonResponse({"message": "key 값이 잘못되었습니다!"}, status=400)
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request)"}, status=400)
 
     @login_decorator
     def delete(self, request):
@@ -58,21 +61,20 @@ class sign_up(View):
 class sign_in(View):
     def post(self, request):
         """ 로그인 메소드 (토큰 생성) """
-        data = json.loads(request.body)
         try:
-            if Users.objects.filter(email=data['email']).exists():
-                user = Users.objects.get(email=data['email'])
+            if Users.objects.filter(email=request.POST['email']).exists():
+                user = Users.objects.get(email=request.POST['email'])
 
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                if bcrypt.checkpw(request.POST['password'].encode('utf-8'), user.password.encode('utf-8')):
                     # 토큰 생성         jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-                    token = jwt.encode({'email': data['email']}, SECRET_KEY, algorithm="HS256")
+                    token = jwt.encode({'email': request.POST['email']}, SECRET_KEY, algorithm="HS256")
                     token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
                     return JsonResponse({"token": token}, status=200)
                 else:
-                    return JsonResponse({"message": "비밀번호가 잘못되었습니다!"}, status=401)
-            return JsonResponse({"message": "존재하지 않는 이메일입니다!"}, status=401)
+                    return JsonResponse({"message": "비밀번호가 잘못되었습니다!(Email and password do not match.)"}, status=403)
+            return JsonResponse({"message": "존재하지 않는 이메일입니다!(The account does not exist.)"}, status=400)
         except KeyError:
-            return JsonResponse({"message": "key 값이 잘못되었습니다!"}, status=400)
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request)"}, status=400)
 
     @login_decorator
     def get(self, request):
@@ -82,11 +84,6 @@ class sign_in(View):
         token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
         return JsonResponse({"token": token}, status=200)
 
-    @login_decorator
-    def delete(self, request):
-        """ 로그아웃 (토큰 삭제) """
-        return JsonResponse({"message": "없어질 예정?입니다."}, status=200)
 
-
-def hello(self):
+def hello(request):
     return JsonResponse({'haha': 'Do you know when I finish to develop server?'}, status=200)
