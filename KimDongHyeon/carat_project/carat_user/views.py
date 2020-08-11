@@ -8,6 +8,7 @@ from .models import Users
 from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.decorators.csrf import csrf_exempt
 
 
 def login_decorator(func):
@@ -63,10 +64,9 @@ class sign_in(View):
                 user = Users.objects.get(email=data['email'])
 
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    # ===토큰 생성===      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
+                    # 토큰 생성         jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
                     token = jwt.encode({'email': data['email']}, SECRET_KEY, algorithm="HS256")
                     token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
-                    # =============
                     return JsonResponse({"token": token}, status=200)
                 else:
                     return JsonResponse({"message": "비밀번호가 잘못되었습니다!"}, status=401)
@@ -77,39 +77,16 @@ class sign_in(View):
     @login_decorator
     def get(self, request):
         """ 토큰 갱신 """
-        data = json.loads(request.body)
-        try:
-            if Users.objects.filter(email=data['email']).exists():
-                user = Users.objects.get(email=data['email'])
-
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    # ===토큰 생성===      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-                    token = jwt.encode({'email': data['email']}, SECRET_KEY, algorithm="HS256")
-                    token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
-                    # =============
-                    return JsonResponse({"token": token}, status=200)
-                else:
-                    return JsonResponse({"message": "비밀번호가 잘못되었습니다!"}, status=401)
-            return JsonResponse({"message": "존재하지 않는 이메일입니다!"}, status=401)
-        except KeyError:
-            return JsonResponse({"message": "key 값이 잘못되었습니다!"}, status=400)
+        # 토큰 생성      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
+        token = jwt.encode({'email': request.user}, SECRET_KEY, algorithm="HS256")
+        token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
+        return JsonResponse({"token": token}, status=200)
 
     @login_decorator
     def delete(self, request):
         """ 로그아웃 (토큰 삭제) """
-        data = json.loads(request.body)
-        try:
-            if Users.objects.filter(email=data['email']).exists():
-                user = Users.objects.get(email=data['email'])
+        return JsonResponse({"message": "없어질 예정?입니다."}, status=200)
 
-                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                    # ===토큰 생성===      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-                    token = jwt.encode({'email': data['email']}, SECRET_KEY, algorithm="HS256")
-                    token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
-                    # =============
-                    return JsonResponse({"token": token}, status=200)
-                else:
-                    return JsonResponse({"message": "비밀번호가 잘못되었습니다!"}, status=401)
-            return JsonResponse({"message": "존재하지 않는 이메일입니다!"}, status=401)
-        except KeyError:
-            return JsonResponse({"message": "key 값이 잘못되었습니다!"}, status=400)
+
+def hello(self):
+    return JsonResponse({'haha': 'Do you know when I finish to develop server?'}, status=200)
