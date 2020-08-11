@@ -83,7 +83,3 @@ class sign_in(View):
         token = jwt.encode({'email': request.user}, SECRET_KEY, algorithm="HS256")
         token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
         return JsonResponse({"token": token}, status=200)
-
-
-def hello(request):
-    return JsonResponse({'haha': 'Do you know when I finish to develop server?'}, status=200)
