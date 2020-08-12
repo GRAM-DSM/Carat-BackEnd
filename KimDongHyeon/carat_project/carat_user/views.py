@@ -19,9 +19,9 @@ def login_decorator(func):
         try:
             access_token = request.headers.get('Authorization', None)
             payload = jwt.decode(access_token, SECRET_KEY, algorithm='HS256')
-            if payload['token_type'] == 'access' and payload['exp'] < timezone.now().timestamp():
-                return JsonResponse({'message': '엑세스 토큰이 만료되었습니다!'}, status=400)
             request.user = Users.objects.get(email=payload['email'])
+        except jwt.exceptions.ExpiredSignatureError:
+            return JsonResponse({'message': '토큰의 서명이 만료되었습니다!'}, status=400)
         except jwt.exceptions.DecodeError:
             return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=400)
         except Users.DoesNotExist:
