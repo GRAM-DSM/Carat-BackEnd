@@ -1,16 +1,14 @@
 import json
 import bcrypt  # 암호화 용
 import jwt  # 토큰 발행용
-import time # 시간 지정용
 from django.utils import timezone
 import time
 
 from carat_project.settings import SECRET_KEY  # 토큰 발행에 사용할 secret key
-from .models import Users
+from .models import Users, Profiles
 from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.csrf import csrf_exempt
 
 
 def login_decorator(func):
@@ -45,10 +43,18 @@ class sign_up(View):
             password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # (비밀번호 암호화2) 암호화된 비밀번호 생성
             password_crypt = password_crypt.decode('utf-8')  # (비밀번호 암호화3) DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
             print(f'암호화 된 비밀번호 : {password_crypt}    비밀번호 길이 :', len(password_crypt))
-            Users(
+            users = Users(
                 email=request.POST['email'],
                 hashed_password=password_crypt,    # 암호화된 비밀번호를 저장
                 created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
+            )
+            users.save()
+            Profiles(
+                user_email=users,
+                name=str(request.POST['email']).split('@')[0],
+                profile_image='default_profile.jpg',
+                cover_image='default_cover.jpg',
+                about_me='이곳에 자기소개를 입력하세요.',
             ).save()
             return HttpResponse(status=200)
         except KeyError:
@@ -58,11 +64,12 @@ class sign_up(View):
     def delete(self, request):
         """ 계정 삭제(회원 탈퇴) """
         try:
-            print(Users.objects.filter(email=request.user.email)[0].email, '님이 정상적으로 탈퇴되었습니다!')
+            print('탈퇴하는 유저:', Users.objects.filter(email=request.user.email)[0].email)
+            Profiles.objects.filter(user_email=request.user.email).delete()
             Users.objects.filter(email=request.user.email).delete()
             print('남은 유저:', Users.objects.all())
             return HttpResponse(status=200)
-        except:
+        except KeyError:
             return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
 
 
