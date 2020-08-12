@@ -1,5 +1,3 @@
-from django.shortcuts import render
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .models import Profiles, Users
 
@@ -30,10 +28,14 @@ def login_decorator(func):
 @api_view(['GET'])
 def read_profile(request, email):
     """ 유저의 프로필 정보 가져오기 """
-    print('요청하는 유저:', request.user.email, '가져올 유저:', email)
-    profile = Profiles.objects.filter(user_email=email)
-    print(profile)
-    return JsonResponse({'message': '잘 가져왔네요!'}, status=200)
+    print('가져올 유저:', email)
+    user = Users.objects.get(email=email)
+    print(Profiles.objects.get(id=1))
+    if Profiles.objects.filter(user_email=email).exists():
+        # profile = Profiles.objects.get(user_email=email)
+        # print(profile)
+        return JsonResponse({'message': '잘 가져왔네요!'}, status=200)
+    return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
 @api_view(['PUT'])

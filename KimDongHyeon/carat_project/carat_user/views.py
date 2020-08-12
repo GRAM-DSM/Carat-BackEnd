@@ -51,7 +51,7 @@ class sign_up(View):
             users.save()
             Profiles(
                 user_email=users,
-                name=str(request.POST['email']).split('@')[0],
+                name=request.POST['name'],
                 profile_image='default_profile.jpg',
                 cover_image='default_cover.jpg',
                 about_me='이곳에 자기소개를 입력하세요.',
@@ -105,7 +105,7 @@ class sign_in(View):
         """ 토큰 갱신 """
         # 토큰 생성      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
         access_token = jwt.encode({'token_type': 'access',
-                                   'email': request.POST['email'],
+                                   'email': request.user.email,
                                    'exp': timezone.now().timestamp() + (3600 * 2),  # (3600 * 2) == 2시간
                                    'iss': 'dong'},  # 토큰 발행자 : dong(김동현)
                                   SECRET_KEY, algorithm="HS256").decode('utf-8')
