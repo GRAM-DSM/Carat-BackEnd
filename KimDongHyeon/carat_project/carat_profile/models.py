@@ -12,10 +12,12 @@ class Users(models.Model):
 
 
 class Profiles(models.Model):
-    user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
+    user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='user_email', primary_key=True)
     name = models.CharField(max_length=80)
-    profile_image = models.CharField(max_length=120)
-    cover_image = models.CharField(max_length=120)
+    profile_image = models.ImageField(upload_to="images")
+    cover_image = models.ImageField(upload_to="images")
+    # profile_image = models.CharField(max_length=120)
+    # cover_image = models.CharField(max_length=120)
     about_me = models.CharField(max_length=100)
 
     class Meta:
@@ -24,7 +26,7 @@ class Profiles(models.Model):
 
 
 class FollowList(models.Model):
-    follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email', primary_key=True)
+    follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email')
     followed_user_email = models.ForeignKey('Profiles', models.DO_NOTHING, db_column='followed_user_email')
 
     class Meta:

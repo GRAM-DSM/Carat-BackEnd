@@ -10,3 +10,16 @@ class Users(models.Model):
         managed = False
         db_table = 'users'
 
+
+class Profiles(models.Model):
+    user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='user_email', primary_key=True)
+    name = models.CharField(max_length=80)
+    profile_image = models.ImageField(upload_to="images")
+    cover_image = models.ImageField(upload_to="images")
+    # profile_image = models.CharField(max_length=120)
+    # cover_image = models.CharField(max_length=120)
+    about_me = models.CharField(max_length=100)
+
+    class Meta:
+        managed = False
+        db_table = 'profiles'

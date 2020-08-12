@@ -5,5 +5,5 @@ urlpatterns = [
     path('<email>', views.read_profile),
     path('', views.update_profile),
     path('<email>/following', views.following),
-    path('<email>/followers', views.followers)
+    path('<email>/followers', views.followers),
 ]
