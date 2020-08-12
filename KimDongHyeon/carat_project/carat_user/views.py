@@ -19,6 +19,8 @@ def login_decorator(func):
         try:
             access_token = request.headers.get('Authorization', None)
             payload = jwt.decode(access_token, SECRET_KEY, algorithm='HS256')
+            if payload['token_type'] == 'access' and payload['exp'] < timezone.now().timestamp():
+                return JsonResponse({'message': '엑세스 토큰이 만료되었습니다!'}, status=400)
             request.user = Users.objects.get(email=payload['email'])
         except jwt.exceptions.DecodeError:
             return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=400)
@@ -73,8 +75,18 @@ class sign_in(View):
                                   Users.objects.get(email=request.POST['email']).hashed_password.encode('utf-8')):
                     # 토큰 생성 : jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
                     # jwt.encode로 jwt 토큰을 인코딩하고, 이것을 유니코드 문자열로 디코딩
-                    token = jwt.encode({'email': request.POST['email']}, SECRET_KEY, algorithm="HS256").decode('utf-8')
-                    return JsonResponse({"token": token}, status=200)
+                    access_token = jwt.encode({'token_type': 'access',
+                                               'email': request.POST['email'],
+                                               'exp': timezone.now().timestamp() + (3600 * 2),      # (3600 * 2) == 2시간
+                                               'iss': 'dong'},      # 토큰 발행자 : dong(김동현)
+                                              SECRET_KEY, algorithm="HS256").decode('utf-8')
+                    refresh_token = jwt.encode({'token_type': 'refresh',
+                                                'email': request.POST['email'],
+                                                'exp': timezone.now().timestamp() + (86400 * 7),    # (86400 * 7) == 7일
+                                                'iss': 'dong'},     # 토큰 발행자 : dong(김동현)
+                                               SECRET_KEY, algorithm="HS256").decode('utf-8')
+                    print('엑세스 토큰:', access_token, '\n리플레시 토큰:', refresh_token)
+                    return JsonResponse({"access_token": access_token, "refresh_token": refresh_token}, status=200)
                 else:
                     return JsonResponse({"message": "비밀번호가 잘못되었습니다!(Email and password do not match.)"}, status=403)
             return JsonResponse({"message": "존재하지 않는 이메일입니다!(The account does not exist.)"}, status=400)
@@ -85,6 +97,10 @@ class sign_in(View):
     def get(self, request):
         """ 토큰 갱신 """
         # 토큰 생성      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-        token = jwt.encode({'email': request.user.email}, SECRET_KEY, algorithm="HS256").decode('utf-8')
-        print('새로 발급된 access token:', token)
-        return JsonResponse({"token": token}, status=200)
+        access_token = jwt.encode({'token_type': 'access',
+                                   'email': request.POST['email'],
+                                   'exp': timezone.now().timestamp() + (3600 * 2),  # (3600 * 2) == 2시간
+                                   'iss': 'dong'},  # 토큰 발행자 : dong(김동현)
+                                  SECRET_KEY, algorithm="HS256").decode('utf-8')
+        print('새로 발급된 엑세스 토큰:', access_token)
+        return JsonResponse({"token": access_token}, status=200)
