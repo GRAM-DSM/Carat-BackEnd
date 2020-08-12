@@ -2,9 +2,13 @@ from rest_framework.decorators import api_view
 from .models import Profiles, Users
 
 import jwt  # 토큰 발행용
-from carat_project.settings import SECRET_KEY  # 토큰 발행에 사용할 secret key
+from carat_project.settings import SECRET_KEY, MEDIA_ROOT  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import os
 
 
 def login_decorator(func):
@@ -40,7 +44,15 @@ def read_profile(request, email):
 @api_view(['PUT'])
 def update_profile(request):
     """ 유저의 프로필 정보 수정하기 """
-    pass
+    print(request.POST['text'])
+    print(dir(request.FILES))
+    print(request.FILES['image'])
+    path = default_storage.save(request.FILES['image'], ContentFile(request.FILES['image'].read()))
+    tmp_file = os.path.join(MEDIA_ROOT, path)
+    with request.FILES['image'].open() as f:
+        print(f.content)
+
+    return JsonResponse({'하': '이팅'}, status=200)
 
 
 @api_view(['GET'])
