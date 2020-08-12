@@ -19,8 +19,7 @@ def login_decorator(func):
         try:
             access_token = request.headers.get('Authorization', None)
             payload = jwt.decode(access_token, SECRET_KEY, algorithm='HS256')
-            user = Users.objects.get(email=payload['email'])
-            request.user = user
+            request.user = Users.objects.get(email=payload['email'])
         except jwt.exceptions.DecodeError:
             return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=400)
         except Users.DoesNotExist:
@@ -56,7 +55,13 @@ class sign_up(View):
     @login_decorator
     def delete(self, request):
         """ 계정 삭제(회원 탈퇴) """
-        Users.objects.filter(email=request.user).delete()
+        try:
+            print(Users.objects.filter(email=request.user.email)[0].email, '님이 정상적으로 탈퇴되었습니다!')
+            Users.objects.filter(email=request.user.email).delete()
+            print('남은 유저:', Users.objects.all())
+            return HttpResponse(status=200)
+        except:
+            return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
 
 
 class sign_in(View):
@@ -80,6 +85,6 @@ class sign_in(View):
     def get(self, request):
         """ 토큰 갱신 """
         # 토큰 생성      jwt.encode({<유저정보>}, <시크릿키>, algorithm = '특정 알고리즘')
-        token = jwt.encode({'email': request.user}, SECRET_KEY, algorithm="HS256")
-        token = token.decode('utf-8')  # 유니코드 문자열로 디코딩
+        token = jwt.encode({'email': request.user.email}, SECRET_KEY, algorithm="HS256").decode('utf-8')
+        print('새로 발급된 access token:', token)
         return JsonResponse({"token": token}, status=200)
