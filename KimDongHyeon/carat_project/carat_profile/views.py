@@ -29,12 +29,11 @@ def login_decorator(func):
 def read_profile(request, email):
     """ 유저의 프로필 정보 가져오기 """
     print('가져올 유저:', email)
-    user = Users.objects.get(email=email)
-    print(Profiles.objects.get(id=1))
     if Profiles.objects.filter(user_email=email).exists():
-        # profile = Profiles.objects.get(user_email=email)
-        # print(profile)
-        return JsonResponse({'message': '잘 가져왔네요!'}, status=200)
+        profile = Profiles.objects.get(user_email=email)
+        print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
+        return JsonResponse({"user_email": email, "name": profile.name, "profile_image": profile.profile_image,
+                             "cover_image": profile.cover_image, "about_me": profile.about_me}, status=200)
     return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
