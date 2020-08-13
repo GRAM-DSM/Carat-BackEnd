@@ -66,11 +66,25 @@ class update_profile(View):
             pass
 
 
-@api_view(['GET'])
-def following(request, email):      # 유저의 팔로잉 목록 가져오기
-    pass
+class following(View):
+    @login_decorator
+    def get(self, request, email):
+        """ 팔로잉 목록 가져오기 """
+        pass
+
+    @login_decorator
+    def post(self, request, email):
+        """ 팔로잉 하기 """
+        pass
+
+    @login_decorator
+    def delete(self, request, email):
+        """ 팔로잉 취소하기 """
+        pass
 
 
-@api_view(['GET'])
-def followers(request, email):      # 유저의 팔로워 목록 가져오기
-    pass
+class followers(View):
+    @login_decorator
+    def get(self, request, email):
+        """ 팔로워 목록 가져오기 """
+        pass

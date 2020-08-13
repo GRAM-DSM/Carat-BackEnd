@@ -49,13 +49,13 @@ class Profiles(models.Model):
 
 
 class FollowList(models.Model):
-    follow_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='follow_user_email', primary_key=True)
-    followed_user_email = models.ForeignKey('Profiles', models.DO_NOTHING, db_column='followed_user_email')
-
     class Meta:
         managed = False
         db_table = 'follow_list'
         unique_together = (('follow_user_email', 'followed_user_email'),)
+
+    follow_user_email = models.CharField(max_length=80, db_column='follow_user_email', primary_key=True)
+    followed_user_email = models.CharField(max_length=80, db_column='followed_user_email')
 
 
 class Recarings(models.Model):
