@@ -54,7 +54,7 @@ class sign_up(View):
             Profiles(
                 user_email=users,
                 name=request.POST['name'],
-                profile_image='images/profile/carrat_default_icon-0{random.randint(2, 5)}.png',
+                profile_image=f'images/profile/carrat_default_icon-0{random.randint(2, 5)}.png',
                 cover_image='images/profile/default_cover.jpg',
                 about_me='이곳에 자기소개를 입력하세요.',
             ).save()

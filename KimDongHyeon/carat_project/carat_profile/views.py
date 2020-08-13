@@ -3,7 +3,7 @@ from .models import Profiles, Users
 from django.views import View
 
 import jwt  # 토큰 발행용
-from carat_project.settings import SECRET_KEY, MEDIA_ROOT  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
+from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -27,14 +27,19 @@ def login_decorator(func):
 
 
 class read_profile(View):
+    @login_decorator
     def get(self, request, email):
         """ 유저의 프로필 정보 가져오기 """
         print('가져올 유저:', email)
         if Profiles.objects.filter(user_email=email).exists():
             profile = Profiles.objects.get(user_email=email)
+            print(request.get_host(), 'http://127.0.0.1:8000/media', profile.profile_image, profile.cover_image)
             print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
-            return JsonResponse({"user_email": email, "name": profile.name, "profile_image_url": profile.profile_image,
-                                 "cover_image_url": profile.cover_image, "about_me": profile.about_me}, status=200)
+            return JsonResponse({"user_email": email, "name": profile.name, "about_me": profile.about_me,
+                                 "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                                 "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                                 "my_self": (True if email == request.user.email else False)},
+                                status=200)
         return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
