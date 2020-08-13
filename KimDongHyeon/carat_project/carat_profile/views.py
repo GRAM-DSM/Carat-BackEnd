@@ -7,10 +7,6 @@ from carat_project.settings import SECRET_KEY, MEDIA_ROOT  # 토큰 발행에 �
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-import os
-
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
@@ -44,20 +40,21 @@ class read_profile(View):
 
 class update_profile(View):
     @login_decorator
-    def put(self, request):
+    def post(self, request):
         """ 유저의 프로필 정보 수정하기 """
         try:
             print(request.user.email)
             if Profiles.objects.filter(user_email=request.user.email).exists():
                 profile = Profiles.objects.get(user_email=request.user.email)
-                print(request.POST)
-                print(dir(request.POST))
-                print('profile.name', request.POST['name'],
-                      'profile.about_me', request.POST['about_me'])
+                print('name:', request.POST['name'],
+                      'about_me:', request.POST['about_me'],
+                      '\nprofile_image:', request.FILES['profile_image'],
+                      '\ncover_image:', request.FILES['cover_image'])
                 profile.name = request.POST['name']
                 profile.about_me = request.POST['about_me']
                 profile.profile_image = request.FILES['profile_image']
                 profile.cover_image = request.FILES['cover_image']
+                profile.save()
                 return HttpResponse(status=200)
             return JsonResponse({'message': '해당 유저의 프로필이 존재하지 않습니다!'}, status=404)
         finally:
