@@ -2,3 +2,4 @@ myvenv/
 linuxvenv/
 carat_project/carat_project/__pycache__/
 carat_project/db.sqlite3
+carat_project/media/
