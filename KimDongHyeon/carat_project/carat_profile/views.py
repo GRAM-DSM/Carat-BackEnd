@@ -33,8 +33,8 @@ class read_profile(View):
         if Profiles.objects.filter(user_email=email).exists():
             profile = Profiles.objects.get(user_email=email)
             print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
-            return JsonResponse({"user_email": email, "name": profile.name, "profile_image": profile.profile_image,
-                                 "cover_image": profile.cover_image, "about_me": profile.about_me}, status=200)
+            return JsonResponse({"user_email": email, "name": profile.name, "profile_image_url": profile.profile_image,
+                                 "cover_image_url": profile.cover_image, "about_me": profile.about_me}, status=200)
         return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
