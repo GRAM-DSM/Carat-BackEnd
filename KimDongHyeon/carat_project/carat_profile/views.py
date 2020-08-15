@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view
-from .models import Profiles, Users
+from .models import Profiles, Users, FollowList
 from django.views import View
 
 import jwt  # 토큰 발행용
@@ -70,12 +70,24 @@ class following(View):
     @login_decorator
     def get(self, request, email):
         """ 팔로잉 목록 가져오기 """
-        pass
+        for follow in FollowList.objects.filter(followed_user_email=email):
+            print(follow)
+        return JsonResponse({'ppap': '개꿀잼몰카'}, status=200)
 
     @login_decorator
     def post(self, request, email):
         """ 팔로잉 하기 """
-        pass
+        try:
+            print('팔로우 하는 사람:', request.user.email, '\n팔로우 받는 사람:', email)
+            if request.user.email == email:
+                return JsonResponse({'message': '자기자신을 팔로우 할 수 없습니다!'}, status=400)
+            FollowList(
+                follow_user_email=request.user.email,
+                followed_user_email=email,
+            ).save()
+            return HttpResponse(status=200)
+        finally:
+            pass
 
     @login_decorator
     def delete(self, request, email):
