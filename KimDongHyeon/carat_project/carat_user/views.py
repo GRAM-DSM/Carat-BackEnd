@@ -3,7 +3,9 @@ import bcrypt  # 암호화 용
 import jwt  # 토큰 발행용
 from django.utils import timezone
 import time
+import random
 
+from django.core.files import File
 from carat_project.settings import SECRET_KEY  # 토큰 발행에 사용할 secret key
 from .models import Users, Profiles
 from django.views import View
@@ -52,8 +54,8 @@ class sign_up(View):
             Profiles(
                 user_email=users,
                 name=request.POST['name'],
-                profile_image='default_profile.jpg',
-                cover_image='default_cover.jpg',
+                profile_image=f'images/profile/carrat_default_icon-0{random.randint(2, 5)}.png',
+                cover_image='images/profile/default_cover.jpg',
                 about_me='이곳에 자기소개를 입력하세요.',
             ).save()
             return HttpResponse(status=200)

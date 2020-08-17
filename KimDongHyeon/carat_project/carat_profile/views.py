@@ -1,9 +1,9 @@
 from rest_framework.decorators import api_view
-from .models import Profiles, Users
+from .models import Profiles, Users, FollowList
 from django.views import View
 
 import jwt  # 토큰 발행용
-from carat_project.settings import SECRET_KEY, MEDIA_ROOT  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
+from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -27,14 +27,19 @@ def login_decorator(func):
 
 
 class read_profile(View):
+    @login_decorator
     def get(self, request, email):
         """ 유저의 프로필 정보 가져오기 """
         print('가져올 유저:', email)
         if Profiles.objects.filter(user_email=email).exists():
             profile = Profiles.objects.get(user_email=email)
+            print(request.get_host(), 'http://127.0.0.1:8000/media', profile.profile_image, profile.cover_image)
             print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
-            return JsonResponse({"user_email": email, "name": profile.name, "profile_image": profile.profile_image,
-                                 "cover_image": profile.cover_image, "about_me": profile.about_me}, status=200)
+            return JsonResponse({"user_email": email, "name": profile.name, "about_me": profile.about_me,
+                                 "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                                 "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                                 "my_self": (True if email == request.user.email else False)},
+                                status=200)
         return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
@@ -61,11 +66,37 @@ class update_profile(View):
             pass
 
 
-@api_view(['GET'])
-def following(request, email):      # 유저의 팔로잉 목록 가져오기
-    pass
+class following(View):
+    @login_decorator
+    def get(self, request, email):
+        """ 팔로잉 목록 가져오기 """
+        for follow in FollowList.objects.filter(followed_user_email=email):
+            print(follow)
+        return JsonResponse({'ppap': '개꿀잼몰카'}, status=200)
+
+    @login_decorator
+    def post(self, request, email):
+        """ 팔로잉 하기 """
+        try:
+            print('팔로우 하는 사람:', request.user.email, '\n팔로우 받는 사람:', email)
+            if request.user.email == email:
+                return JsonResponse({'message': '자기자신을 팔로우 할 수 없습니다!'}, status=400)
+            FollowList(
+                follow_user_email=request.user.email,
+                followed_user_email=email,
+            ).save()
+            return HttpResponse(status=200)
+        finally:
+            pass
+
+    @login_decorator
+    def delete(self, request, email):
+        """ 팔로잉 취소하기 """
+        pass
 
 
-@api_view(['GET'])
-def followers(request, email):      # 유저의 팔로워 목록 가져오기
-    pass
+class followers(View):
+    @login_decorator
+    def get(self, request, email):
+        """ 팔로워 목록 가져오기 """
+        pass
