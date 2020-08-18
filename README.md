@@ -1,8 +1,14 @@
 # Carat-BackEnd
 
-## 사용 기술
-Django 2.0(Python3)
-Flask
+## 사용 버전
+
+Django==3.1  
+django-rest-auth==0.9.5  
+djangorestframework==3.11.1  
+djangorestframework-jwt==1.11.0  
+Pillow==7.2.0  
+PyJWT==1.7.1  
+PyMySQL==0.10.0  
 
 ## 역할 분리
 - **API 명세**  
