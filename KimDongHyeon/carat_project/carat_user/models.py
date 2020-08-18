@@ -12,7 +12,7 @@ class Users(models.Model):
 
 
 class Profiles(models.Model):
-    user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='user_email', primary_key=True)
+    user_email = models.OneToOneField(Users, on_delete=models.CASCADE, db_column='user_email', primary_key=True)
     name = models.CharField(max_length=80)
     profile_image = models.ImageField(upload_to="images/profile")
     cover_image = models.ImageField(upload_to="images/profile")

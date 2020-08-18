@@ -12,7 +12,7 @@ class Users(models.Model):
 
 
 class Carings(models.Model):
-    user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
+    user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='user_email')
     caring = models.CharField(max_length=300)
     image = models.CharField(max_length=400)
     carat_count = models.IntegerField()
@@ -25,8 +25,8 @@ class Carings(models.Model):
 
 
 class CaratList(models.Model):
-    carat_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='carat_user_email', primary_key=True)
-    caring = models.ForeignKey('Carings', models.DO_NOTHING)
+    carat_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='carat_user_email', primary_key=True)
+    caring = models.ForeignKey(Carings, on_delete=models.CASCADE)
 
     class Meta:
         managed = False
@@ -35,7 +35,7 @@ class CaratList(models.Model):
 
 
 class Profiles(models.Model):
-    user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
+    user_email = models.OneToOneField(Users, on_delete=models.CASCADE, db_column='user_email', primary_key=True)
     name = models.CharField(max_length=80)
     profile_image = models.ImageField(upload_to="images/profile")
     cover_image = models.ImageField(upload_to="images/profile")
@@ -49,9 +49,9 @@ class Profiles(models.Model):
 
 
 class FollowList(models.Model):
-    follow_user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='follow_user_email',
+    follow_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='follow_user_email',
                                           primary_key=True, related_name='related_primary')
-    followed_user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='followed_user_email',
+    followed_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='followed_user_email',
                                             related_name='related_secondary')
 
     class Meta:
@@ -60,8 +60,8 @@ class FollowList(models.Model):
 
 
 class Recarings(models.Model):
-    user_email = models.ForeignKey('Users', models.DO_NOTHING, db_column='user_email')
-    caring = models.ForeignKey('Carings', models.DO_NOTHING)
+    user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='user_email')
+    caring = models.ForeignKey(Carings, on_delete=models.CASCADE)
     created_at = models.DateTimeField()
 
     class Meta:
@@ -80,7 +80,7 @@ class Recarings(models.Model):
 5. 장고는 fk(외래키)가 2개이상이 안되나 보다. https://stackoverrun.com/ko/q/89313
 6. 5번을 해결해주는 방법이 있는데, fk(외래키)의 related_name 을 같은 fk(외래키)끼리 다르게 해주면 된다.
 7. 근데 Recarings 를 보면, fk(외래키)가 2개여도, 참조하는 테이블이 다르면 6번을 할 필요없이 잘 돌아간다;;
-8. 
+8. on_delete=models.CASCADE 를 장고 모델의 필드 괄호 안에 넣어주면, 부모가 삭제되면 자식도 같이 삭제되는, 종속 관계가 된다.
  
 class CaratList(models.Model):
     carat_user_email = models.OneToOneField('Users', models.DO_NOTHING, db_column='carat_user_email', primary_key=True)
