@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework.decorators import api_view
 from .models import Profiles, Users, FollowList
 from django.views import View
@@ -68,13 +69,6 @@ class update_profile(View):
 
 class following(View):
     @login_decorator
-    def get(self, request, email):
-        """ 팔로잉 목록 가져오기 """
-        for follow in FollowList.objects.filter(followed_user_email=email).exists():
-            print(follow)
-        return JsonResponse({'ppap': '개꿀잼몰카'}, status=200)
-
-    @login_decorator
     def post(self, request, email):
         """ 팔로잉 하기 """
         try:
@@ -88,13 +82,37 @@ class following(View):
                 ).save()
                 return HttpResponse(status=200)
             return JsonResponse({'message': '팔로우할 유저가 존재하지 않습니다!'}, status=400)
-        finally:
-            pass
+        except IntegrityError:
+            return JsonResponse({'message': '이미 팔로우한 유저입니다!'}, status=400)
 
     @login_decorator
     def delete(self, request, email):
         """ 팔로잉 취소하기 """
-        pass
+        try:
+            print('팔로우 취소 하는 사람:', request.user.email, '\n팔로우 취소 받는 사람:', email)
+            if request.user.email == email:
+                return JsonResponse({'message': '자기자신 입니다!'}, status=400)
+            if Users.objects.filter(email=email).exists():
+                if not FollowList.objects.filter(
+                    follow_user_email=Users.objects.get(email=request.user.email),
+                    followed_user_email=Users.objects.get(email=email),
+                ).exists():
+                    return JsonResponse({'message': '이미 팔로우가 되어있지 않습니다!'}, status=400)
+                FollowList.objects.filter(
+                    follow_user_email=Users.objects.get(email=request.user.email),
+                    followed_user_email=Users.objects.get(email=email),
+                ).delete()
+                return HttpResponse(status=200)
+            return JsonResponse({'message': '팔로우 취소할 유저가 존재하지 않습니다!'}, status=400)
+        finally:
+            pass
+
+    @login_decorator
+    def get(self, request, email):
+        """ 팔로잉 목록 가져오기 """
+        for follow in FollowList.objects.filter(followed_user_email=email).exists():
+            print(follow)
+        return JsonResponse({'ppap': '개꿀잼몰카'}, status=200)
 
 
 class followers(View):
