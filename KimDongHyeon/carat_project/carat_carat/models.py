@@ -25,7 +25,7 @@ class Carings(models.Model):
 
 
 class CaratList(models.Model):
-    carat_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='carat_user_email', primary_key=True)
+    carat_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='carat_user_email')
     caring = models.ForeignKey(Carings, on_delete=models.CASCADE)
 
     class Meta:
@@ -50,13 +50,14 @@ class Profiles(models.Model):
 
 class FollowList(models.Model):
     follow_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='follow_user_email',
-                                          primary_key=True, related_name='related_primary')
+                                          related_name='related_primary')
     followed_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='followed_user_email',
                                             related_name='related_secondary')
 
     class Meta:
         managed = False
         db_table = 'follow_list'
+        unique_together = (('follow_user_email', 'followed_user_email'),)
 
 
 class Recarings(models.Model):
