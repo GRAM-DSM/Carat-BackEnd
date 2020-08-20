@@ -28,7 +28,7 @@ CREATE TABLE recarings
     caring_id 		INT 			NOT NULL,
 	created_at 		TIMESTAMP 		NOT NULL 	DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT recarings_carat_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email),
-    CONSTRAINT recarings_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) 
+    CONSTRAINT recarings_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id)
 );
 CREATE TABLE profiles
 (
@@ -46,7 +46,7 @@ CREATE TABLE carat_list
     caring_id 			INT 		NOT NULL,
     PRIMARY KEY (id),
     CONSTRAINT follow_list_carat_user_email_fkey FOREIGN KEY (carat_user_email) REFERENCES users(email),
-    CONSTRAINT follow_list_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) 
+    CONSTRAINT follow_list_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id)
 );
 CREATE TABLE follow_list
 (
