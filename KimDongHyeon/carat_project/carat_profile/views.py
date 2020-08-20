@@ -122,16 +122,16 @@ class following(View):
             if Users.objects.filter(email=email).exists():
                 followings = []
                 for follow in FollowList.objects.filter(follow_user_email=Users.objects.get(email=email)):
-                    profile = Profiles.objects.get(user_email=follow.follow_user_email)
+                    profile = Profiles.objects.get(user_email=follow.followed_user_email)
                     is_following = FollowList.objects.filter(
                         followed_user_email=Users.objects.get(email=email),
                         follow_user_email=Users.objects.get(email=request.user.email)
-                    ).exists()
+                        ).exists()
                     d = dict(zip(
                         ('profile_image', 'name', 'email', 'following',),
                         ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image), profile.name,
-                         profile.user_email, is_following,)
-                    ))
+                         profile.user_email.email, is_following,)
+                        ))
                     print(d)
                     followings.append(d)
                 return JsonResponse({'followings:': followings}, status=200)
@@ -148,13 +148,15 @@ class followers(View):
             if Users.objects.filter(email=email).exists():
                 followings = []
                 for follow in FollowList.objects.filter(followed_user_email=Users.objects.get(email=email)):
-                    profile = Profiles.objects.get(user_email=follow.followed_user_email)
+                    profile = Profiles.objects.get(user_email=follow.follow_user_email)
+                    is_following = FollowList.objects.filter(
+                        follow_user_email=Users.objects.get(email=email),
+                        followed_user_email=Users.objects.get(email=request.user.email)
+                        ).exists()
                     d = dict(zip(('profile_image', 'name', 'email', 'following',),
                              ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
-                              profile.name, profile.user_email,
-                              FollowList.objects.filter(follow_user_email=Users.objects.get(email=email),
-                                                        followed_user_email=Users.objects.get(email=request.user.email)).exists(),)
-                                 ))
+                              profile.name, profile.user_email.email, is_following, )
+                        ))
                     print(d)
                     followings.append(d)
                 return JsonResponse({'followings:': followings}, status=200)
