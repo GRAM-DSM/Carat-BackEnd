@@ -1,4 +1,4 @@
-from django.db import IntegrityError
+from django.db import IntegrityError, OperationalError
 from rest_framework.decorators import api_view
 from .models import Profiles, Users, FollowList
 from django.views import View
@@ -38,7 +38,7 @@ class read_profile(View):
             print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
             return JsonResponse({"user_email": email, "name": profile.name, "about_me": profile.about_me,
                                  "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
-                                 "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                                 "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.cover_image),
                                  "my_self": (True if email == request.user.email else False)},
                                 status=200)
         return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
@@ -76,6 +76,11 @@ class following(View):
             if request.user.email == email:
                 return JsonResponse({'message': '자기자신을 팔로우 할 수 없습니다!'}, status=400)
             if Users.objects.filter(email=email).exists():
+                if FollowList.objects.filter(
+                    follow_user_email=Users.objects.get(email=request.user.email),
+                    followed_user_email=Users.objects.get(email=email),
+                ).exists():
+                    return JsonResponse({'message': '이미 팔로우한 유저입니다!'}, status=400)
                 FollowList(
                     follow_user_email=Users.objects.get(email=request.user.email),
                     followed_user_email=Users.objects.get(email=email),
@@ -110,13 +115,43 @@ class following(View):
     @login_decorator
     def get(self, request, email):
         """ 팔로잉 목록 가져오기 """
-        for follow in FollowList.objects.filter(followed_user_email=email).exists():
-            print(follow)
-        return JsonResponse({'ppap': '개꿀잼몰카'}, status=200)
+        try:
+            if Users.objects.filter(email=email).exists():
+                followings = []
+                for follow in FollowList.objects.filter(follow_user_email=Users.objects.get(email=email)):
+                    profile = Profiles.objects.get(user_email=follow.follow_user_email)
+                    d = dict(zip(('profile_image', 'name', 'email', 'following',),
+                             ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                              profile.name, profile.user_email,
+                              FollowList.objects.filter(followed_user_email=Users.objects.get(email=email),
+                                                        follow_user_email=Users.objects.get(email=request.user.email)).exists(),)
+                                 ))
+                    print(d)
+                    followings.append(d)
+                return JsonResponse({'followings:': followings}, status=200)
+            return JsonResponse({'message': '해당 유저가 존재하지 않습니다!'}, status=400)
+        finally:
+            pass
 
 
 class followers(View):
     @login_decorator
     def get(self, request, email):
         """ 팔로워 목록 가져오기 """
-        pass
+        try:
+            if Users.objects.filter(email=email).exists():
+                followings = []
+                for follow in FollowList.objects.filter(followed_user_email=Users.objects.get(email=email)):
+                    profile = Profiles.objects.get(user_email=follow.followed_user_email)
+                    d = dict(zip(('profile_image', 'name', 'email', 'following',),
+                             ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                              profile.name, profile.user_email,
+                              FollowList.objects.filter(follow_user_email=Users.objects.get(email=email),
+                                                        followed_user_email=Users.objects.get(email=request.user.email)).exists(),)
+                                 ))
+                    print(d)
+                    followings.append(d)
+                return JsonResponse({'followings:': followings}, status=200)
+            return JsonResponse({'message': '해당 유저가 존재하지 않습니다!'}, status=400)
+        finally:
+            pass
