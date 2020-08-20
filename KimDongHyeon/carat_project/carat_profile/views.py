@@ -34,16 +34,19 @@ class read_profile(View):
         print('가져올 유저:', email)
         if Profiles.objects.filter(user_email=email).exists():
             profile = Profiles.objects.get(user_email=email)
-            print(request.get_host(), 'http://127.0.0.1:8000/media', profile.profile_image, profile.cover_image)
-            print(profile.user_email, profile.name, profile.profile_image, profile.cover_image, profile.about_me)
-            return JsonResponse({
+            res = {
                 "user_email": email,
                 "name": profile.name,
                 "about_me": profile.about_me,
                 "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                 "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.cover_image),
+                "following_count": len(FollowList.objects.filter(follow_user_email=email)),
+                "follower_count": len(FollowList.objects.filter(followed_user_email=email)),
+                "created_at": Users.objects.get(email=email).created_at,
                 "my_self": (True if email == request.user.email else False)
-            }, status=200)
+            }
+            print(res)
+            return JsonResponse(res, status=200)
         return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
 
 
@@ -127,13 +130,14 @@ class following(View):
                         followed_user_email=Users.objects.get(email=email),
                         follow_user_email=Users.objects.get(email=request.user.email)
                         ).exists()
-                    d = dict(zip(
-                        ('profile_image', 'name', 'email', 'following',),
-                        ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image), profile.name,
-                         profile.user_email.email, is_following,)
-                        ))
-                    print(d)
-                    followings.append(d)
+                    res = {
+                        'profile_image': 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                        'name': profile.name,
+                        'email': profile.user_email.email,
+                        'following': is_following
+                    }
+                    print(res)
+                    followings.append(res)
                 return JsonResponse({'followings:': followings}, status=200)
             return JsonResponse({'message': '해당 유저가 존재하지 않습니다!'}, status=400)
         finally:
