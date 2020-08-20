@@ -112,4 +112,4 @@ class sign_in(View):
                                    'iss': 'dong'},  # 토큰 발행자 : dong(김동현)
                                   SECRET_KEY, algorithm="HS256").decode('utf-8')
         print('새로 발급된 엑세스 토큰:', access_token)
-        return JsonResponse({"token": access_token}, status=200)
+        return JsonResponse({"access_token": access_token}, status=200)
