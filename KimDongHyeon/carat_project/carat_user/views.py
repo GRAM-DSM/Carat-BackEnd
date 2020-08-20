@@ -67,7 +67,6 @@ class sign_up(View):
         """ 계정 삭제(회원 탈퇴) """
         try:
             print('탈퇴하는 유저:', Users.objects.filter(email=request.user.email)[0].email)
-            Profiles.objects.filter(user_email=request.user.email).delete()
             Users.objects.filter(email=request.user.email).delete()
             print('남은 유저:', Users.objects.all())
             return HttpResponse(status=200)
@@ -86,7 +85,8 @@ class sign_in(View):
                     # jwt.encode로 jwt 토큰을 인코딩하고, 이것을 유니코드 문자열로 디코딩
                     access_token = jwt.encode({'token_type': 'access',
                                                'email': request.POST['email'],
-                                               'exp': timezone.now().timestamp() + (3600 * 2),      # (3600 * 2) == 2시간
+                                                # 'exp': timezone.now().timestamp() + (3600 * 2),      # (3600 * 2) == 2시간
+                                               'exp': timezone.now().timestamp() + (86400 * 7),# IT JUST TEST!!
                                                'iss': 'dong'},      # 토큰 발행자 : dong(김동현)
                                               SECRET_KEY, algorithm="HS256").decode('utf-8')
                     refresh_token = jwt.encode({'token_type': 'refresh',

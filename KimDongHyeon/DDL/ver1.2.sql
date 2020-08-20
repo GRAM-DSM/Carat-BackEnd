@@ -1,4 +1,5 @@
 -- 장고가 복합키를 지원하지 않기에, DB 구조를 변경
+-- on delete cascade 를 FK 마다 추가
 
 DROP DATABASE if exists carat;
 CREATE DATABASE carat;
@@ -20,15 +21,15 @@ CREATE TABLE carings
     recaring_count 	INT 			NOT NULL,
     created_at 		TIMESTAMP 		NOT NULL 	DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    CONSTRAINT carings_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email)
+    CONSTRAINT carings_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade
 );
 CREATE TABLE recarings
 (
 	user_email 		VARCHAR(80) 	NOT NULL,
     caring_id 		INT 			NOT NULL,
 	created_at 		TIMESTAMP 		NOT NULL 	DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT recarings_carat_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email),
-    CONSTRAINT recarings_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id)
+    CONSTRAINT recarings_carat_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade,
+    CONSTRAINT recarings_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) on delete cascade 
 );
 CREATE TABLE profiles
 (
@@ -37,7 +38,7 @@ CREATE TABLE profiles
     profile_image 	VARCHAR(120) 	NOT NULL,
     cover_image		VARCHAR(120) 	NOT NULL,
     about_me        VARCHAR(100)    NOT NULL,
-    CONSTRAINT profiles_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email)
+    CONSTRAINT profiles_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade
 );
 CREATE TABLE carat_list 
 (
@@ -45,8 +46,8 @@ CREATE TABLE carat_list
 	carat_user_email 	VARCHAR(80),
     caring_id 			INT 		NOT NULL,
     PRIMARY KEY (id),
-    CONSTRAINT follow_list_carat_user_email_fkey FOREIGN KEY (carat_user_email) REFERENCES users(email),
-    CONSTRAINT follow_list_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id)
+    CONSTRAINT follow_list_carat_user_email_fkey FOREIGN KEY (carat_user_email) REFERENCES users(email) on delete cascade,
+    CONSTRAINT follow_list_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) on delete cascade
 );
 CREATE TABLE follow_list
 (
@@ -54,6 +55,6 @@ CREATE TABLE follow_list
 	follow_user_email 		VARCHAR(80),
     followed_user_email 	VARCHAR(80),
     PRIMARY KEY (id),
-    CONSTRAINT follow_list_follow_user_email_fkey FOREIGN KEY (follow_user_email) REFERENCES users(email),
-    CONSTRAINT follow_list_followed_user_email_fkey FOREIGN KEY (followed_user_email) REFERENCES users(email) 
+    CONSTRAINT follow_list_follow_user_email_fkey FOREIGN KEY (follow_user_email) REFERENCES users(email) on delete cascade,
+    CONSTRAINT follow_list_followed_user_email_fkey FOREIGN KEY (followed_user_email) REFERENCES users(email) on delete cascade 
 );
