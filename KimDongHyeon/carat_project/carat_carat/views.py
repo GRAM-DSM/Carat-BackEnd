@@ -143,14 +143,13 @@ class do_recaring(View):
         # 일단 리캐링의 id를 생성
         recaring_id = 'r1'
         if Recarings.objects.all().exists():
-            recaring_id = Recarings.objects.order_by('id')[-1].id
-            print('recaring_id:', f'r{int(recaring_id[1:])+1}')
-            recaring_id = f'r{int(recaring_id[1:])+1}'
+            recaring_id = f"r{int(Recarings.objects.order_by('-id')[0].id[1:])+1}"
+            print('recaring_id:', recaring_id)
         # 그 후, 리캐링 생성
         if Carings.objects.filter(id=request.POST.get('id')).exists():
             recaring = Recarings(
                 id=recaring_id,
-                user_email=Users.objeccts.get(email=request.user.email),
+                user_email=Users.objects.get(email=request.user.email),
                 caring=Carings.objects.get(id=request.POST.get('id')),
                 created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp()))
             )
