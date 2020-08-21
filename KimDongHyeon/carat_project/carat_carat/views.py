@@ -12,6 +12,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import time
 
+"""
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!README!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+- 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
+- 캐링 자세히보기 ; 캐링, 리캐링 불러오기 안해줌
+- 타임라인 : 걍 안해줌
+- 캐럿 : 걍 안해줌22
+"""
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
