@@ -9,6 +9,9 @@ from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 �
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.utils import timezone
+import time
+
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
@@ -35,7 +38,16 @@ class do_carat(View):
     @login_decorator
     def post(self, request, id):
         """ 캐럿 하기 """
-        pass
+        print('게시자:', request.user.email, '본문:', request.POST['caring'])
+        Carings(
+            user_email=Users.objects.filter(email=request.user.email),
+            caring=request.POST['caring'],
+            image='',
+            # carat_count=models.IntegerField(),
+            # recaring_count=models.IntegerField(),
+            created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
+        ).save()
+        return JsonResponse({}, status=200)
 
     @login_decorator
     def delete(self, request, id):
