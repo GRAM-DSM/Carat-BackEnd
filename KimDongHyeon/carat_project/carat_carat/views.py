@@ -43,8 +43,6 @@ class create_caring(View):
             user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
             image='',
-            carat_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
-            recaring_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
         )
         caring.save()
