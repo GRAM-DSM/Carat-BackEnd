@@ -12,8 +12,8 @@ caring_patterns = [
 ]
 
 timeline_patterns = [
-    path('', views.create_caring),
-    path('<int:id>', views.edit_caring)
+    path('', views.read_timeline),
+    path('<email>', views.read_profile_timeline)
 ]
 
 urlpatterns = [
