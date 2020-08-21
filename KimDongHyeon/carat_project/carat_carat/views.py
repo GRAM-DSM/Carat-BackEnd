@@ -53,7 +53,7 @@ class create_caring(View):
 
 class edit_caring(View):
     def get(self, request, id):
-        """ 캐링 가져오기 """
+        """ 캐링/리캐링 가져오기 """
         try:
             if Carings.objects.filter(id=id).exists():  # 캐링
                 target = Carings.objects.get(id=id)
@@ -140,11 +140,12 @@ class read_carat_list(View):
 
 class do_recaring(View):
     @login_decorator
-    def post(self, request, id):
+    def post(self, request):
         """ 리캐링 생성하기 """
 
+
     @login_decorator
-    def delete(self, request, id):
+    def delete(self, request):
         """ 리캐링 취소하기 """
 
 
