@@ -136,7 +136,7 @@ class read_carat_list(View):
 # re-caring API
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-3
 
-class do_recaring(View):
+class create_recaring(View):
     @login_decorator
     def post(self, request):
         """ 리캐링 생성하기 """
@@ -157,13 +157,13 @@ class do_recaring(View):
             return JsonResponse({'created_recaring_id': recaring.id}, status=200)
         return JsonResponse({'message': '리캐링할 캐링이 존재하지 않습니다!'}, status=404)
 
+
+class delete_recaring(View):
     @login_decorator
-    def delete(self, request):
+    def delete(self, request, id):
         """ 리캐링 취소하기 """
-        print(request.POST.values())
-        print(request.POST.id)
-        if Recarings.objects.filter(id=request.POST.get('id')).exists():
-            target = Recarings.objects.get(id=request.POST.get('id'))
+        if Recarings.objects.filter(id=id).exists():
+            target = Recarings.objects.get(id=id)
             if target.user_email == Users.objects.get(email=request.user.email):
                 print('취소할 리캐링:', target)
                 target.delete()
