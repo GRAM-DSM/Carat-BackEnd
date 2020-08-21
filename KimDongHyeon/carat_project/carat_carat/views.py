@@ -32,16 +32,19 @@ def login_decorator(func):
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-2
 
 class do_carat(View):
+    @login_decorator
     def post(self, request, id):
         """ 캐럿 하기 """
         pass
 
+    @login_decorator
     def delete(self, request, id):
         """ 캐럿 취소 """
         pass
 
 
 class read_carat_list(View):
+    @login_decorator
     def get(self, request):
         """ 캐럿 리스트 가져오기 """
         pass
@@ -51,6 +54,7 @@ class read_carat_list(View):
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
 
 class create_caring(View):
+    @login_decorator
     def post(self, request):
         """ 캐링 생성하기 """
         pass
@@ -61,10 +65,12 @@ class edit_caring(View):
         """ 캐링 가져오기 """
         pass
 
+    @login_decorator
     def put(self, request, id):
         """ 캐링 수정하기 """
         pass
 
+    @login_decorator
     def delete(self, request, id):
         """ 캐링 삭제하기 """
         pass
@@ -74,9 +80,11 @@ class edit_caring(View):
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-3
 
 class do_recaring(View):
+    @login_decorator
     def post(self, request, id):
         """ 리캐링 생성하기 """
 
+    @login_decorator
     def delete(self, request, id):
         """ 리캐링 취소하기 """
 
