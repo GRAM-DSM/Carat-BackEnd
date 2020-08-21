@@ -126,7 +126,7 @@ class do_carat(View):
     @login_decorator
     def post(self, request, id):
         """ 캐럿 하기 """
-        if id[0] == 'r':     # 캐럿할 대상이 리캐링일 경우
+        if id.isalpha():     # 캐럿할 대상이 리캐링일 경우
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
@@ -148,7 +148,7 @@ class do_carat(View):
     @login_decorator
     def delete(self, request, id):
         """ 캐럿 취소 """
-        if id[0] == 'r':     # 캐럿할 대상이 리캐링일 경우
+        if id.isalpha():     # 캐럿할 대상이 리캐링일 경우
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
