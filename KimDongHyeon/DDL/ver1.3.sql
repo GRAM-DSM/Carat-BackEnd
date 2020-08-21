@@ -1,5 +1,6 @@
 -- 장고가 복합키를 지원하지 않기에, DB 구조를 변경
 -- on delete cascade 를 FK 마다 추가
+-- recarings 에서 id (auto field) 추가
 
 DROP DATABASE if exists carat;
 CREATE DATABASE carat;
@@ -25,6 +26,7 @@ CREATE TABLE carings
 );
 CREATE TABLE recarings
 (
+	id					INT 		AUTO_INCREMENT,	
 	user_email 		VARCHAR(80) 	NOT NULL,
     caring_id 		INT 			NOT NULL,
 	created_at 		TIMESTAMP 		NOT NULL 	DEFAULT CURRENT_TIMESTAMP,

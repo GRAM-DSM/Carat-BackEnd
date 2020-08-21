@@ -54,7 +54,31 @@ class create_caring(View):
 class edit_caring(View):
     def get(self, request, id):
         """ 캐링 가져오기 """
-        pass
+        try:
+            if Carings.objects.filter(id=id).exists():
+                target = Carings.objects.get(id=id)
+                target.caring = request.POST.get('caring')
+                target.image
+                res = {
+                    'owner': {
+                        'id': target.user_email.email,
+                        'profile_image': Profiles.objects.get(user_email=target.user_email).profile_image,
+                    },
+                    'post_time': target.created_at,
+                    'body': target.caring,
+                    'body_images': [
+                        ''
+                    ],
+                    'is_retweet': False,
+                    'retweet_refer': None,
+                    'carat_count': 0,
+                    'retweet_count': 0
+                }
+                return HttpResponse(status=200)
+            elif Recarings.objects.filter(id=id).exists():
+            return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
 
     @login_decorator
     def post(self, request, id):
@@ -63,7 +87,7 @@ class edit_caring(View):
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    target.caring = request.POST['caring']
+                    target.caring = request.POST.get('caring')
                     target.image = ''
                     target.save()
                     return HttpResponse(status=200)
@@ -79,7 +103,7 @@ class edit_caring(View):
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    target.caring = request.POST['caring']
+                    target.caring = request.POST.get('caring')
                     print('삭제할 캐링:', target)
                     target.delete()
                     return HttpResponse(status=200)
