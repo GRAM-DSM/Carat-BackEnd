@@ -160,6 +160,8 @@ class do_recaring(View):
     @login_decorator
     def delete(self, request):
         """ 리캐링 취소하기 """
+        print(request.POST.values())
+        print(request.POST.id)
         if Recarings.objects.filter(id=request.POST.get('id')).exists():
             target = Recarings.objects.get(id=request.POST.get('id'))
             if target.user_email == Users.objects.get(email=request.user.email):
