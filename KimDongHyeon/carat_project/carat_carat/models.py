@@ -15,8 +15,6 @@ class Carings(models.Model):
     user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='user_email')
     caring = models.CharField(max_length=300)
     image = models.CharField(max_length=400)
-    carat_count = models.IntegerField()
-    recaring_count = models.IntegerField()
     created_at = models.DateTimeField()
 
     class Meta:
