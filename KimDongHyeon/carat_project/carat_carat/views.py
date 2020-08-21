@@ -31,6 +31,68 @@ def login_decorator(func):
     return wrapper
 
 
+# caring API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
+
+class create_caring(View):
+    @login_decorator
+    def post(self, request):
+        """ 캐링 생성하기 """
+        print('게시자:', request.user.email, '본문:', request.POST['caring'])
+        caring = Carings(
+            user_email=Users.objects.get(email=request.user.email),
+            caring=request.POST['caring'],
+            image='',
+            carat_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            recaring_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
+        )
+        caring.save()
+        return JsonResponse({'created_caring_id': caring.id}, status=200)
+
+
+class edit_caring(View):
+    def get(self, request, id):
+        """ 캐링 가져오기 """
+        pass
+
+    @login_decorator
+    def post(self, request, id):
+        """ 캐링 수정하기 """
+        try:
+            print('수정하는사람:', request.user.email)
+            if Carings.objects.filter(id=id).exists():
+                profile = Profiles.objects.get(user_email=request.user.email)
+                print('name:', request.POST['name'],
+                      'about_me:', request.POST['about_me'],
+                      '\nprofile_image:', request.FILES['profile_image'],
+                      '\ncover_image:', request.FILES['cover_image'])
+                profile.name = request.POST['name']
+                profile.about_me = request.POST['about_me']
+                profile.profile_image = request.FILES['profile_image']
+                profile.cover_image = request.FILES['cover_image']
+                profile.save()
+                return HttpResponse(status=200)
+            return JsonResponse({'message': '수정할 캐링이 존재하지 않습니다!'}, status=404)
+        finally:
+            pass
+
+    @login_decorator
+    def delete(self, request, id):
+        """ 캐링 삭제하기 """
+        try:
+            if Carings.objects.filter(id=id).exist():
+                target = Carings.objects.get(id=id)
+                if target.user_email == Users.objects.get(email=request.user.email):
+                    print('삭제할 캐링:', target.values())
+                    target.delete()
+                    return HttpResponse(status=200)
+                return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
+            return JsonResponse({'message': '삭제할 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
+
+
 # carat API
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-2
 
@@ -38,16 +100,7 @@ class do_carat(View):
     @login_decorator
     def post(self, request, id):
         """ 캐럿 하기 """
-        print('게시자:', request.user.email, '본문:', request.POST['caring'])
-        Carings(
-            user_email=Users.objects.filter(email=request.user.email),
-            caring=request.POST['caring'],
-            image='',
-            # carat_count=models.IntegerField(),
-            # recaring_count=models.IntegerField(),
-            created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
-        ).save()
-        return JsonResponse({}, status=200)
+        pass
 
     @login_decorator
     def delete(self, request, id):
@@ -59,32 +112,6 @@ class read_carat_list(View):
     @login_decorator
     def get(self, request):
         """ 캐럿 리스트 가져오기 """
-        pass
-
-
-# caring API
-# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
-
-class create_caring(View):
-    @login_decorator
-    def post(self, request):
-        """ 캐링 생성하기 """
-        pass
-
-
-class edit_caring(View):
-    def get(self, request, id):
-        """ 캐링 가져오기 """
-        pass
-
-    @login_decorator
-    def put(self, request, id):
-        """ 캐링 수정하기 """
-        pass
-
-    @login_decorator
-    def delete(self, request, id):
-        """ 캐링 삭제하기 """
         pass
 
 
