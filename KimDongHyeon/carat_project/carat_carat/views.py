@@ -162,9 +162,11 @@ class do_recaring(View):
         """ 리캐링 취소하기 """
         if Recarings.objects.filter(id=request.POST.get('id')).exists():
             target = Recarings.objects.get(id=request.POST.get('id'))
-            print('취소할 리캐링:', target)
-            target.delete()
-            return HttpResponse(status=200)
+            if target.user_email == Users.objects.get(email=request.user.email):
+                print('취소할 리캐링:', target)
+                target.delete()
+                return HttpResponse(status=200)
+            return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 리캐링이 아님)'}, status=403)
         return JsonResponse({'message': '삭제할 리캐링이 존재하지 않습니다!'}, status=404)
 
 
