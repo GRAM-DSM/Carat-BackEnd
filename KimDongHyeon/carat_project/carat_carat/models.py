@@ -61,7 +61,8 @@ class FollowList(models.Model):
 
 
 class Recarings(models.Model):
-    user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='user_email')
+    id = models.CharField(primary_key=True, max_length=10)
+    user_email = models.ForeignKey('Users', on_delete=models.CASCADE, db_column='user_email')
     caring = models.ForeignKey(Carings, on_delete=models.CASCADE)
     created_at = models.DateTimeField()
 
