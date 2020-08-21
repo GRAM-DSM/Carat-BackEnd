@@ -60,37 +60,33 @@ class edit_caring(View):
     def post(self, request, id):
         """ 캐링 수정하기 """
         try:
-            print('수정하는사람:', request.user.email)
             if Carings.objects.filter(id=id).exists():
-                profile = Profiles.objects.get(user_email=request.user.email)
-                print('name:', request.POST['name'],
-                      'about_me:', request.POST['about_me'],
-                      '\nprofile_image:', request.FILES['profile_image'],
-                      '\ncover_image:', request.FILES['cover_image'])
-                profile.name = request.POST['name']
-                profile.about_me = request.POST['about_me']
-                profile.profile_image = request.FILES['profile_image']
-                profile.cover_image = request.FILES['cover_image']
-                profile.save()
-                return HttpResponse(status=200)
+                target = Carings.objects.get(id=id)
+                if target.user_email == Users.objects.get(email=request.user.email):
+                    target.caring = request.POST['caring']
+                    target.image = ''
+                    target.save()
+                    return HttpResponse(status=200)
+                return JsonResponse({'message': '수정할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
             return JsonResponse({'message': '수정할 캐링이 존재하지 않습니다!'}, status=404)
-        finally:
-            pass
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 수정할 수 없습니다!"}, status=400)
 
     @login_decorator
     def delete(self, request, id):
         """ 캐링 삭제하기 """
         try:
-            if Carings.objects.filter(id=id).exist():
+            if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    print('삭제할 캐링:', target.values())
+                    target.caring = request.POST['caring']
+                    print('삭제할 캐링:', target)
                     target.delete()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
             return JsonResponse({'message': '삭제할 캐링이 존재하지 않습니다!'}, status=404)
         except KeyError:
-            return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
+            return JsonResponse({"message": "해당 캐링을 삭제할 수 없습니다!"}, status=400)
 
 
 # carat API
