@@ -142,11 +142,33 @@ class do_recaring(View):
     @login_decorator
     def post(self, request):
         """ 리캐링 생성하기 """
-
+        # 일단 리캐링의 id를 생성
+        recaring_id = 'r1'
+        if Recarings.objects.all().exists():
+            recaring_id = Recarings.objects.order_by('id')[-1].id
+            print('recaring_id:', f'r{int(recaring_id[1:])+1}')
+            recaring_id = f'r{int(recaring_id[1:])+1}'
+        # 그 후, 리캐링 생성
+        if Carings.objects.filter(id=request.POST.get('id')).exists():
+            recaring = Recarings(
+                id=recaring_id,
+                user_email=Users.objeccts.get(email=request.user.email),
+                caring=Carings.objects.get(id=request.POST.get('id')),
+                created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp()))
+            )
+            recaring.save()
+            return JsonResponse({'created_recaring_id': recaring.id}, status=200)
+        return JsonResponse({'message': '리캐링할 캐링이 존재하지 않습니다!'}, status=404)
 
     @login_decorator
     def delete(self, request):
         """ 리캐링 취소하기 """
+        if Recarings.objects.filter(id=request.POST.get('id')).exists():
+            target = Recarings.objects.get(id=request.POST.get('id'))
+            print('취소할 리캐링:', target)
+            target.delete()
+            return HttpResponse(status=200)
+        return JsonResponse({'message': '삭제할 리캐링이 존재하지 않습니다!'}, status=404)
 
 
 # timeline API
