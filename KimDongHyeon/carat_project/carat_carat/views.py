@@ -9,6 +9,9 @@ from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 �
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
+from django.utils import timezone
+import time
+
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
@@ -26,6 +29,88 @@ def login_decorator(func):
 
         return func(self, request, *args, **kwargs)
     return wrapper
+
+
+# caring API
+# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
+
+class create_caring(View):
+    @login_decorator
+    def post(self, request):
+        """ 캐링 생성하기 """
+        print('게시자:', request.user.email, '본문:', request.POST['caring'])
+        caring = Carings(
+            user_email=Users.objects.get(email=request.user.email),
+            caring=request.POST['caring'],
+            image='',
+            carat_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            recaring_count=0,   # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
+        )
+        caring.save()
+        return JsonResponse({'created_caring_id': caring.id}, status=200)
+
+
+class edit_caring(View):
+    def get(self, request, id):
+        """ 캐링 가져오기 """
+        try:
+            if Carings.objects.filter(id=id).exists():  # 캐링
+                target = Carings.objects.get(id=id)
+                res = {
+                    'owner': {
+                        'id': target.user_email.email,
+                        'profile_image': 'http://' + request.get_host() + MEDIA_URL
+                                         + str(Profiles.objects.get(user_email=target.user_email).profile_image,)
+                    },
+                    'post_time': target.created_at,
+                    'body': target.caring,
+                    'body_images': [
+                        ''
+                    ],
+                    'is_retweet': False,
+                    'retweet_refer': None,
+                    'carat_count': 0,
+                    'retweet_count': 0
+                }
+                return JsonResponse(res, status=200)
+            elif Recarings.objects.filter(id=id).exists():  # 리캐링
+                pass
+            return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
+
+    @login_decorator
+    def post(self, request, id):
+        """ 캐링 수정하기 """
+        try:
+            if Carings.objects.filter(id=id).exists():
+                target = Carings.objects.get(id=id)
+                if target.user_email == Users.objects.get(email=request.user.email):
+                    target.caring = request.POST.get('caring')
+                    target.image = ''
+                    target.save()
+                    return HttpResponse(status=200)
+                return JsonResponse({'message': '수정할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
+            return JsonResponse({'message': '수정할 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 수정할 수 없습니다!"}, status=400)
+
+    @login_decorator
+    def delete(self, request, id):
+        """ 캐링 삭제하기 """
+        try:
+            if Carings.objects.filter(id=id).exists():
+                target = Carings.objects.get(id=id)
+                if target.user_email == Users.objects.get(email=request.user.email):
+                    target.caring = request.POST.get('caring')
+                    print('삭제할 캐링:', target)
+                    target.delete()
+                    return HttpResponse(status=200)
+                return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
+            return JsonResponse({'message': '삭제할 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 삭제할 수 없습니다!"}, status=400)
 
 
 # carat API
@@ -47,32 +132,6 @@ class read_carat_list(View):
     @login_decorator
     def get(self, request):
         """ 캐럿 리스트 가져오기 """
-        pass
-
-
-# caring API
-# https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
-
-class create_caring(View):
-    @login_decorator
-    def post(self, request):
-        """ 캐링 생성하기 """
-        pass
-
-
-class edit_caring(View):
-    def get(self, request, id):
-        """ 캐링 가져오기 """
-        pass
-
-    @login_decorator
-    def put(self, request, id):
-        """ 캐링 수정하기 """
-        pass
-
-    @login_decorator
-    def delete(self, request, id):
-        """ 캐링 삭제하기 """
         pass
 
 
