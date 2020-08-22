@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 
 carat_patterns = [
-    path('<int:id>', views.do_carat.as_view()),
+    path('<id>', views.do_carat.as_view()),
     path('<int:id>/list', views.read_carat_list.as_view())
 ]
 
