@@ -157,12 +157,14 @@ class followers(View):
                         follow_user_email=Users.objects.get(email=email),
                         followed_user_email=Users.objects.get(email=request.user.email)
                         ).exists()
-                    d = dict(zip(('profile_image', 'name', 'email', 'following',),
-                             ('http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
-                              profile.name, profile.user_email.email, is_following, )
-                        ))
-                    print(d)
-                    followings.append(d)
+                    res = {
+                        'name': profile.name,
+                        'email': profile.user_email.email,
+                        'profile_image': 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                        'is_follow': is_following
+                    }
+                    print(res)
+                    followings.append(res)
                 return JsonResponse({'followings:': followings}, status=200)
             return JsonResponse({'message': '해당 유저가 존재하지 않습니다!'}, status=400)
         finally:
