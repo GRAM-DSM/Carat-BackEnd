@@ -131,10 +131,10 @@ class following(View):
                         follow_user_email=Users.objects.get(email=request.user.email)
                         ).exists()
                     res = {
-                        'profile_image': 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                         'name': profile.name,
                         'email': profile.user_email.email,
-                        'following': is_following
+                        'profile_image': 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                        'is_follow': is_following
                     }
                     print(res)
                     followings.append(res)

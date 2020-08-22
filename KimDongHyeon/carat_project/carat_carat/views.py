@@ -172,9 +172,30 @@ class do_carat(View):
 
 class read_carat_list(View):
     @login_decorator
-    def get(self, request):
+    def get(self, request, id):
         """ 캐럿 리스트 가져오기 """
-        pass
+        if not id.isdigit():  # 캐럿할 대상이 리캐링일 경우
+            if Recarings.objects.filter(id=id).exists():
+                id = Recarings.objects.get(id=id).caring.id
+            else:
+                return JsonResponse({'message': '캐럿리스트를 볼 리캐링이 존재하지 않습니다!'}, status=404)
+        if Carings.objects.filter(id=id).exists():
+            print('id:', id)
+            carat_li = CaratList.objects.filter(caring=Carings.objects.get(id=id))
+            {
+                "id": "유저 이름",
+                "email": "유저 이메일",
+                "profile_image": "유저 커버사진 링크",
+                "is_follow": true
+            },
+                carat = CaratList.objects.filter(
+                    carat_user_email=Users.objects.get(email=request.user.email),
+                    caring=Carings.objects.get(id=id)
+                )
+                print('삭제할 캐럿:', carat)
+                carat.delete()
+                return HttpResponse(status=200)
+        return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!'}, status=404)
 
 
 # re-caring API
