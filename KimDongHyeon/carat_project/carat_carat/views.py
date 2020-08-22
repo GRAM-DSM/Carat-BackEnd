@@ -4,7 +4,7 @@ from rest_framework.decorators import api_view
 
 import jwt
 from django.views import View
-from .models import Profiles, Users, Carings, Recarings, CaratList
+from .models import Profiles, Users, Carings, Recarings, CaratList, FollowList
 from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
@@ -17,7 +17,6 @@ import time
 - 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
 - 캐링 자세히보기 ; 캐링, 리캐링 불러오기 안해줌
 - 타임라인 : 걍 안해줌
-- 캐럿 : 걍 안해줌22
 """
 
 
@@ -181,20 +180,22 @@ class read_carat_list(View):
                 return JsonResponse({'message': '캐럿리스트를 볼 리캐링이 존재하지 않습니다!'}, status=404)
         if Carings.objects.filter(id=id).exists():
             print('id:', id)
-            carat_li = CaratList.objects.filter(caring=Carings.objects.get(id=id))
-            {
-                "id": "유저 이름",
-                "email": "유저 이메일",
-                "profile_image": "유저 커버사진 링크",
-                "is_follow": true
-            },
-                carat = CaratList.objects.filter(
-                    carat_user_email=Users.objects.get(email=request.user.email),
-                    caring=Carings.objects.get(id=id)
-                )
-                print('삭제할 캐럿:', carat)
-                carat.delete()
-                return HttpResponse(status=200)
+            li = []
+            for carat in CaratList.objects.filter(caring=Carings.objects.get(id=id)):
+                profile = Profiles.objects.get(user_email=carat.carat_user_email)
+                is_following = FollowList.objects.filter(
+                    followed_user_email=carat.carat_user_email,
+                    follow_user_email=Users.objects.get(email=request.user.email)
+                ).exists()
+                res = {
+                    "name": profile.name,
+                    "email": carat.carat_user_email.email,
+                    "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                    "is_follow": is_following
+                },
+                print(res)
+                li.append(res)
+            return JsonResponse({'result': li}, status=200)
         return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!'}, status=404)
 
 
