@@ -57,34 +57,6 @@ class create_caring(View):
 
 
 class edit_caring(View):
-    def get(self, request, id):
-        """ 캐링/리캐링 가져오기 """
-        try:
-            if Carings.objects.filter(id=id).exists():  # 캐링
-                target = Carings.objects.get(id=id)
-                res = {
-                    'owner': {
-                        'id': target.user_email.email,
-                        'profile_image': 'http://' + request.get_host() + MEDIA_URL
-                                         + str(Profiles.objects.get(user_email=target.user_email).profile_image,)
-                    },
-                    'post_time': target.created_at,
-                    'body': target.caring,
-                    'body_images': [
-                        ''
-                    ],
-                    'is_retweet': False,
-                    'retweet_refer': None,
-                    'carat_count': 0,
-                    'retweet_count': 0
-                }
-                return JsonResponse(res, status=200)
-            elif Recarings.objects.filter(id=id).exists():  # 리캐링
-                pass
-            return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
-        except KeyError:
-            return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
-
     @login_decorator
     def post(self, request, id):
         """ 캐링 수정하기 """
@@ -116,6 +88,55 @@ class edit_caring(View):
             return JsonResponse({'message': '삭제할 캐링이 존재하지 않습니다!'}, status=404)
         except KeyError:
             return JsonResponse({"message": "해당 캐링을 삭제할 수 없습니다!"}, status=400)
+
+
+class detail_caring(View):
+    @login_decorator
+    def get(self, request, id):
+        """ 캐링/리캐링 가져오기 """
+        try:
+            if id.isdigit():    # 캐링일 경우
+                if Carings.objects.filter(id=id).exists():
+                    target = Carings.objects.get(id=id)
+                    res = {
+                        'owner': {
+                            'id': target.user_email.email,
+                            'profile_image': 'http://' + request.get_host() + MEDIA_URL
+                                             + str(Profiles.objects.get(user_email=target.user_email).profile_image)
+                        },
+                        'post_time': target.created_at,
+                        'body': target.caring,
+                        'body_images': [
+                            ''
+                        ],
+                        'is_retweet': False,
+                        'retweet_refer': None,
+                        'carat_count': 0,
+                        'retweet_count': 0
+                    }
+                return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+            elif id.isdigit():    # 리캐링일 경우
+                if Carings.objects.filter(id=id).exists():
+                    target = Carings.objects.get(id=id)
+                    res = {
+                        'owner': {
+                            'id': target.user_email.email,
+                            'profile_image': 'http://' + request.get_host() + MEDIA_URL
+                                             + str(Profiles.objects.get(user_email=target.user_email).profile_image)
+                        },
+                        'post_time': target.created_at,
+                        'body': target.caring,
+                        'body_images': [
+                            ''
+                        ],
+                        'is_retweet': False,
+                        'retweet_refer': None,
+                        'carat_count': 0,
+                        'retweet_count': 0
+                    }
+                return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
 
 
 # carat API

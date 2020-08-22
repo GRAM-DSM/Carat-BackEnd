@@ -8,7 +8,8 @@ carat_patterns = [
 
 caring_patterns = [
     path('', views.create_caring.as_view()),
-    path('<int:id>', views.edit_caring.as_view())
+    path('<int:id>', views.edit_caring.as_view()),
+    path('detail/<id>', views.detail_caring.as_view())
 ]
 
 timeline_patterns = [
