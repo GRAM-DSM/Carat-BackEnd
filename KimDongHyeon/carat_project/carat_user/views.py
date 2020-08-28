@@ -86,8 +86,8 @@ class sign_in(View):
                     access_token = jwt.encode({'token_type': 'access',
                                                'email': request.POST['email'],
                                                 # 'exp': timezone.now().timestamp() + (3600 * 2),      # (3600 * 2) == 2시간
-                                               'exp': timezone.now().timestamp() + (86400 * 7),
-                                               # TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+                                               'exp': timezone.now().timestamp() + (86400 * 14),    # 히히 2주나 줬지롱
+                                               # FIXME 엑세스 토큰 개발 완료시 만료시간 원래대로 돌려두기
                                                'iss': 'dong'},      # 토큰 발행자 : dong(김동현)
                                               SECRET_KEY, algorithm="HS256").decode('utf-8')
                     refresh_token = jwt.encode({'token_type': 'refresh',
