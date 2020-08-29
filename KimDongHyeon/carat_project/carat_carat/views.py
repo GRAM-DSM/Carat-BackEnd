@@ -13,7 +13,6 @@ from django.utils import timezone
 import time
 
 # TODO 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
-# TODO 캐링 자세히보기 ; 캐링, 리캐링 불러오기 안해줌
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -46,7 +45,7 @@ class create_caring(View):
         caring = Carings(
             user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
-            image='',
+            image='',  # fixme : 실제 값 넣어주기
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
         )
         caring.save()
@@ -62,7 +61,7 @@ class edit_caring(View):
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
                     target.caring = request.POST.get('caring')
-                    target.image = ''
+                    target.image = ''  # fixme : 실제 값 넣어주기
                     target.save()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '수정할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
@@ -90,47 +89,58 @@ class edit_caring(View):
 class detail_caring(View):
     @login_decorator
     def get(self, request, id):
-        """ 캐링/리캐링 가져오기 """
+        """ 캐링/리캐링 가져오기(자세히보기) """
         try:
             if id.isdigit():    # 캐링일 경우
                 if Carings.objects.filter(id=id).exists():
                     target = Carings.objects.get(id=id)
                     res = {
+                        'is_retweet': False,
+                        "caring_id": '1',  # fixme : 실제 값 넣어주기
                         'owner': {
-                            'id': target.user_email.email,
+                            'name': '요홍홍',  # fixme : 실제 값 넣어주기
+                            'email': target.user_email.email,
                             'profile_image': 'http://' + request.get_host() + MEDIA_URL
                                              + str(Profiles.objects.get(user_email=target.user_email).profile_image)
                         },
                         'post_time': target.created_at,
                         'body': target.caring,
                         'body_images': [
-                            ''
+                            ''  # fixme : 실제 값 넣어주기
                         ],
-                        'is_retweet': False,
-                        'retweet_refer': None,
-                        'carat_count': 0,
-                        'retweet_count': 0
+                        'carat_count': 0,  # fixme : 실제 값 넣어주기
+                        'retweet_count': 0,  # fixme : 실제 값 넣어주기
+                        "me_recaring": True,  # fixme : 실제 값 넣어주기
+                        "me_carat": False  # fixme : 실제 값 넣어주기
                     }
+                    return JsonResponse(res, status=200)
                 return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+
             elif id.isdigit():    # 리캐링일 경우
                 if Carings.objects.filter(id=id).exists():
                     target = Carings.objects.get(id=id)
                     res = {
+                        'is_retweet': True,
+                        "recaring_name": "리캐링 한 사람",  # fixme : 실제 값 넣어주기
+                        "recaring_id": 'r1',  # fixme : 실제 값 넣어주기
+                        "caring_id": '1',  # fixme : 실제 값 넣어주기
                         'owner': {
-                            'id': target.user_email.email,
+                            'name': '요홍홍',  # fixme : 실제 값 넣어주기
+                            'email': target.user_email.email,
                             'profile_image': 'http://' + request.get_host() + MEDIA_URL
                                              + str(Profiles.objects.get(user_email=target.user_email).profile_image)
                         },
                         'post_time': target.created_at,
                         'body': target.caring,
                         'body_images': [
-                            ''
+                            ''  # fixme : 실제 값 넣어주기
                         ],
-                        'is_retweet': False,
-                        'retweet_refer': None,
-                        'carat_count': 0,
-                        'retweet_count': 0
+                        'carat_count': 0,  # fixme : 실제 값 넣어주기
+                        'retweet_count': 0,  # fixme : 실제 값 넣어주기
+                        "me_recaring": True,  # fixme : 실제 값 넣어주기
+                        "me_carat": False  # fixme : 실제 값 넣어주기
                     }
+                    return JsonResponse(res, status=200)
                 return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
         except KeyError:
             return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
