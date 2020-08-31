@@ -108,8 +108,8 @@ class detail_caring(View):
                         'body_images': [
                             ''  # fixme : 실제 값 넣어주기
                         ],
-                        'carat_count': CaratList.objects.filter(caring=target),
-                        'retweet_count': Recarings.objects.filter(caring=target),
+                        'carat_count': len(CaratList.objects.filter(caring=target)),
+                        'retweet_count': len(Recarings.objects.filter(caring=target)),
                         "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                         "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
                     }
@@ -136,8 +136,8 @@ class detail_caring(View):
                         'body_images': [
                             ''  # fixme : 실제 값 넣어주기
                         ],
-                        'carat_count': CaratList.objects.filter(caring=target),
-                        'retweet_count': Recarings.objects.filter(caring=target),
+                        'carat_count': len(CaratList.objects.filter(caring=target)),
+                        'retweet_count': len(Recarings.objects.filter(caring=target)),
                         "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                         "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
                     }
