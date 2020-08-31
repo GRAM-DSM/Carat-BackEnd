@@ -94,6 +94,11 @@ class detail_caring(View):
             if id.isdigit():    # 캐링일 경우
                 if Carings.objects.filter(id=id).exists():
                     target = Carings.objects.get(id=id)
+                    print('carat_count', CaratList.objects.filter(caring=target),
+                          'retweet_count', Recarings.objects.filter(caring=target),
+                          "me_recaring", Recarings.objects.filter(caring=target).filter(user_email=request.user.email),
+                          "me_carat", CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email),
+                          )
                     res = {
                         'is_retweet': False,
                         "caring_id": target.id,
