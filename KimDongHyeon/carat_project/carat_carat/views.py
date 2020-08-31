@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.core.files.storage import FileSystemStorage
 
 import jwt
 from django.views import View
@@ -35,7 +36,8 @@ def login_decorator(func):
 
 
 def caring_detail(request, id):
-    """ 캐링/리캐링을 자세히 볼때 사용하는 함수 """
+    """ 캐링/리캐링을 자세히 볼때 사용하는 함수
+        :request: API 요청으로 받아온 인자 값    :id: 캐링/리캐링의 id 값 """
     if id.isdigit():  # 캐링일 경우
         if Carings.objects.filter(id=id).exists():
             target = Carings.objects.get(id=id)
@@ -94,6 +96,14 @@ def caring_detail(request, id):
         return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
 
 
+def file_upload(path, image_name, image):
+    """ 장고의 미디어 링크로 파일을 업로드 하는 함수
+        :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
+    fs = FileSystemStorage(location=path)
+    file_name = fs.save(image_name, image)
+    return fs.url(file_name)
+
+
 # caring API
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
 
@@ -102,6 +112,12 @@ class create_caring(View):
     def post(self, request):
         """ 캐링 생성하기 """
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
+        print(request.FILES)
+        for i, image in request.FILES.items():
+            print(i, '와', image)
+            image_url = file_upload('images/carings/', i[-1], image)
+            print(image_url)
+        print(ppap)
         caring = Carings(
             user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
