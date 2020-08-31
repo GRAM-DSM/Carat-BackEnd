@@ -276,7 +276,13 @@ class read_timeline(View):
         pass
 
 
-class read_profile_timeline(View):
+class read_profile_caring_timeline(View):
     def get(self, request, email):
-        """ 프로필 타임라인 가져오기 """
+        """ 프로필 캐링 타임라인 가져오기 """
+        pass
+
+
+class read_profile_carat_timeline(View):
+    def get(self, request, email):
+        """ 프로필 캐럿 타임라인 가져오기 """
         pass

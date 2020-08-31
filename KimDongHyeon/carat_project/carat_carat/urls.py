@@ -14,7 +14,8 @@ caring_patterns = [
 
 timeline_patterns = [
     path('', views.read_timeline.as_view()),
-    path('<email>', views.read_profile_timeline.as_view())
+    path('caring/<email>', views.read_profile_caring_timeline.as_view()),
+    path('carat/<email>', views.read_profile_carat_timeline.as_view())
 ]
 
 recaring_patterns = [
