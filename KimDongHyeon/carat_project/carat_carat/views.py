@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from django.core.files.storage import FileSystemStorage
+from django.core.files.storage import default_storage
 
 import jwt
 from django.views import View
@@ -99,9 +99,8 @@ def caring_detail(request, id):
 def file_upload(path, image_name, image):
     """ 장고의 미디어 링크로 파일을 업로드 하는 함수
         :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
-    fs = FileSystemStorage(location=path)
-    file_name = fs.save(image_name, image)
-    return fs.url(file_name)
+    fs = default_storage.save(path + image_name, image)
+    return default_storage.url(image_name)
 
 
 # caring API
@@ -114,8 +113,7 @@ class create_caring(View):
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
         print(request.FILES)
         for i, image in request.FILES.items():
-            print(i, '와', image)
-            image_url = file_upload('images/carings/', i[-1], image)
+            image_url = file_upload('images/carings/', i[-1]+'.'+image.split('.')[-1], image)
             print(image_url)
         print(ppap)
         caring = Carings(
