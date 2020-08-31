@@ -94,11 +94,6 @@ class detail_caring(View):
             if id.isdigit():    # 캐링일 경우
                 if Carings.objects.filter(id=id).exists():
                     target = Carings.objects.get(id=id)
-                    print('carat_count', CaratList.objects.filter(caring=target),
-                          'retweet_count', Recarings.objects.filter(caring=target),
-                          "me_recaring", Recarings.objects.filter(caring=target).filter(user_email=request.user.email),
-                          "me_carat", CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email),
-                          )
                     res = {
                         'is_retweet': False,
                         "caring_id": target.id,
@@ -113,10 +108,10 @@ class detail_caring(View):
                         'body_images': [
                             ''  # fixme : 실제 값 넣어주기
                         ],
-                        'carat_count': 0,  # fixme : 실제 값 넣어주기
-                        'retweet_count': 0,  # fixme : 실제 값 넣어주기
-                        "me_recaring": True,  # fixme : 실제 값 넣어주기
-                        "me_carat": False  # fixme : 실제 값 넣어주기
+                        'carat_count': CaratList.objects.filter(caring=target),
+                        'retweet_count': Recarings.objects.filter(caring=target),
+                        "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
+                        "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
                     }
                     return JsonResponse(res, status=200)
                 return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
@@ -141,10 +136,10 @@ class detail_caring(View):
                         'body_images': [
                             ''  # fixme : 실제 값 넣어주기
                         ],
-                        'carat_count': 0,  # fixme : 실제 값 넣어주기
-                        'retweet_count': 0,  # fixme : 실제 값 넣어주기
-                        "me_recaring": True,  # fixme : 실제 값 넣어주기
-                        "me_carat": False  # fixme : 실제 값 넣어주기
+                        'carat_count': CaratList.objects.filter(caring=target),
+                        'retweet_count': Recarings.objects.filter(caring=target),
+                        "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
+                        "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
                     }
                     return JsonResponse(res, status=200)
                 return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
