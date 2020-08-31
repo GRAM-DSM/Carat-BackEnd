@@ -96,9 +96,9 @@ class detail_caring(View):
                     target = Carings.objects.get(id=id)
                     res = {
                         'is_retweet': False,
-                        "caring_id": id,
+                        "caring_id": target.id,
                         'owner': {
-                            'name': '요홍홍',  # fixme : 실제 값 넣어주기
+                            'name': Profiles.objects.get(user_email=target.user_email).name,
                             'email': target.user_email.email,
                             'profile_image': 'http://' + request.get_host() + MEDIA_URL
                                              + str(Profiles.objects.get(user_email=target.user_email).profile_image)
@@ -122,11 +122,11 @@ class detail_caring(View):
                     target = link.carings
                     res = {
                         'is_retweet': True,
-                        "recaring_name": "리캐링 한 사람",  # fixme : 실제 값 넣어주기
-                        "recaring_id": id,
+                        "recaring_name": Profiles.objects.get(user_email=link.user_email).name,
+                        "recaring_id": link.id,
                         "caring_id": target.id,
                         'owner': {
-                            'name': '요홍홍',  # fixme : 실제 값 넣어주기
+                            'name': Profiles.objects.get(user_email=target.user_email).name,
                             'email': target.user_email.email,
                             'profile_image': 'http://' + request.get_host() + MEDIA_URL
                                              + str(Profiles.objects.get(user_email=target.user_email).profile_image)
