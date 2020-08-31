@@ -96,7 +96,7 @@ class detail_caring(View):
                     target = Carings.objects.get(id=id)
                     res = {
                         'is_retweet': False,
-                        "caring_id": '1',  # fixme : 실제 값 넣어주기
+                        "caring_id": id,
                         'owner': {
                             'name': '요홍홍',  # fixme : 실제 값 넣어주기
                             'email': target.user_email.email,
@@ -116,14 +116,15 @@ class detail_caring(View):
                     return JsonResponse(res, status=200)
                 return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
 
-            elif id.isdigit():    # 리캐링일 경우
-                if Carings.objects.filter(id=id).exists():
-                    target = Carings.objects.get(id=id)
+            elif id[0] == 'r' and id[1:].isdigit():    # 리캐링일 경우
+                if Recarings.objects.filter(id=id).exists():
+                    link = Recarings.objects.get(id=id)
+                    target = link.carings
                     res = {
                         'is_retweet': True,
                         "recaring_name": "리캐링 한 사람",  # fixme : 실제 값 넣어주기
-                        "recaring_id": 'r1',  # fixme : 실제 값 넣어주기
-                        "caring_id": '1',  # fixme : 실제 값 넣어주기
+                        "recaring_id": id,
+                        "caring_id": target.id,
                         'owner': {
                             'name': '요홍홍',  # fixme : 실제 값 넣어주기
                             'email': target.user_email.email,
