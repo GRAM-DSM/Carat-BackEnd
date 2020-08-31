@@ -113,7 +113,7 @@ class create_caring(View):
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
         print(request.FILES)
         for i, image in request.FILES.items():
-            image_url = file_upload('images/carings/', i[-1]+'.'+image.split('.')[-1], image)
+            image_url = file_upload('images/carings/', i[-1]+'.'+image.name.split('.')[-1], image)
             print(image_url)
         print(ppap)
         caring = Carings(

@@ -81,8 +81,7 @@ class Recarings(models.Model):
 6. 5번을 해결해주는 방법이 있는데, fk(외래키)의 related_name 을 같은 fk(외래키)끼리 다르게 해주면 된다.
 7. 근데 Recarings 를 보면, fk(외래키)가 2개여도, 참조하는 테이블이 다르면 6번을 할 필요없이 잘 돌아간다;;
 8. on_delete=models.CASCADE 를 장고 모델의 필드 괄호 안에 넣어주면, 부모가 삭제되면 자식도 같이 삭제되는, 종속 관계가 된다.
-
-장고 쿼리셋 나와라
-https://brownbears.tistory.com/426
+9. 장고 쿼리셋(query set) 내맘대로 조종하기 : https://brownbears.tistory.com/426
+10. 장고 imageField 를 쓰지않고 파일을 저장할 수 있다! default_storage : https://stackoverflow.com/questions/26274021/simply-save-file-to-folder-in-django
 
 """
