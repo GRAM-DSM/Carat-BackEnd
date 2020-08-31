@@ -14,7 +14,7 @@ from django.utils import timezone
 import time
 import os
 
-# TODO 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
+# TODO 캐링 수정, 삭제 : 이미지 처리 안해줌
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -126,6 +126,7 @@ class create_caring(View):
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
         )
         caring.save()
+        # 이미지 목록을 image 필드에 추가
         for i, image in request.FILES.items():
             image_url = file_upload('images/carings/', str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1], image)
             caring.image += str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1] + ';'
