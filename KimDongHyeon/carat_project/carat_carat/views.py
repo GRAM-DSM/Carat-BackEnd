@@ -12,7 +12,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 import time
-import os
 
 # TODO 캐링 수정, 삭제 : 이미지 처리 안해줌
 # TODO 타임라인 : 걍 안해줌
@@ -101,7 +100,7 @@ def file_upload(path, image_name, image):
     """ 장고의 미디어 링크로 파일을 업로드 하는 함수
         :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
     # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
-    for file in os.listdir(MEDIA_ROOT+'/'+path):
+    for file in default_storage.listdir(path)[1]:
         if image_name.split('.')[0] in file:
             default_storage.delete(path + file)
             break
@@ -144,7 +143,17 @@ class edit_caring(View):
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
                     target.caring = request.POST.get('caring')
-                    target.image = ''  # fixme : 실제 값 넣어주기
+                    # 일단 기존의 이미지 삭제
+                    target.image = ''
+                    for file in default_storage.listdir('images/carings/')[1]:
+                        if str(target.id)+'-' in file:
+                            default_storage.delete('images/carings/' + file)
+                    # 새 이미지로 수정
+                    for i, image in request.FILES.items():
+                        image_url = file_upload('images/carings/',
+                                                str(target.id) + '-' + i[-1] + '.' + image.name.split('.')[-1], image)
+                        target.image += str(target.id) + '-' + i[-1] + '.' + image.name.split('.')[-1] + ';'
+                    target.image = target.image[:-1]
                     target.save()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '수정할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
