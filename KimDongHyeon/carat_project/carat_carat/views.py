@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from django.core.files.storage import default_storage
 
 import jwt
 from django.views import View
@@ -11,8 +12,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 import time
+import os
 
-# TODO 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
+# TODO 캐링 수정, 삭제 : 이미지 처리 안해줌
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -34,6 +36,80 @@ def login_decorator(func):
     return wrapper
 
 
+def caring_detail(request, id):
+    """ 캐링/리캐링을 자세히 볼때 사용하는 함수
+        :request: API 요청으로 받아온 인자 값    :id: 캐링/리캐링의 id 값 """
+    if id.isdigit():  # 캐링일 경우
+        if Carings.objects.filter(id=id).exists():
+            target = Carings.objects.get(id=id)
+            res = {
+                'is_retweet': False,
+                "caring_id": target.id,
+                'owner': {
+                    'name': Profiles.objects.get(user_email=target.user_email).name,
+                    'email': target.user_email.email,
+                    'profile_image': 'http://' + request.get_host() + MEDIA_URL
+                                     + str(Profiles.objects.get(user_email=target.user_email).profile_image)
+                },
+                'post_time': target.created_at,
+                'body': target.caring,
+                'body_images': [
+                    ''  # fixme : 실제 값 넣어주기
+                ],
+                'carat_count': len(CaratList.objects.filter(caring=target)),
+                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                "me_recaring": Recarings.objects.filter(caring=target).filter(
+                    user_email=request.user.email).exists(),
+                "me_carat": CaratList.objects.filter(caring=target).filter(
+                    carat_user_email=request.user.email).exists(),
+            }
+            return res
+        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+
+    elif id[0] == 'r' and id[1:].isdigit():  # 리캐링일 경우
+        if Recarings.objects.filter(id=id).exists():
+            link = Recarings.objects.get(id=id)
+            target = link.carings
+            res = {
+                'is_retweet': True,
+                "recaring_name": Profiles.objects.get(user_email=link.user_email).name,
+                "recaring_id": link.id,
+                "caring_id": target.id,
+                'owner': {
+                    'name': Profiles.objects.get(user_email=target.user_email).name,
+                    'email': target.user_email.email,
+                    'profile_image': 'http://' + request.get_host() + MEDIA_URL
+                                     + str(Profiles.objects.get(user_email=target.user_email).profile_image)
+                },
+                'post_time': target.created_at,
+                'body': target.caring,
+                'body_images': [
+                    ''  # fixme : 실제 값 넣어주기
+                ],
+                'carat_count': len(CaratList.objects.filter(caring=target)),
+                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                "me_recaring": Recarings.objects.filter(caring=target).filter(
+                    user_email=request.user.email).exists(),
+                "me_carat": CaratList.objects.filter(caring=target).filter(
+                    carat_user_email=request.user.email).exists(),
+            }
+            return res
+        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+
+
+def file_upload(path, image_name, image):
+    """ 장고의 미디어 링크로 파일을 업로드 하는 함수
+        :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
+    # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
+    for file in os.listdir(MEDIA_ROOT+'/'+path):
+        if image_name.split('.')[0] in file:
+            default_storage.delete(path + file)
+            break
+    # 이미지 저장
+    default_storage.save(path + image_name, image)
+    return default_storage.url(image_name)
+
+
 # caring API
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined-1
 
@@ -42,12 +118,19 @@ class create_caring(View):
     def post(self, request):
         """ 캐링 생성하기 """
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
+        print('이미지:', request.FILES)
         caring = Carings(
             user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
-            image='',  # fixme : 실제 값 넣어주기
+            image='',
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
         )
+        caring.save()
+        # 이미지 목록을 image 필드에 추가
+        for i, image in request.FILES.items():
+            image_url = file_upload('images/carings/', str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1], image)
+            caring.image += str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1] + ';'
+        caring.image = caring.image[:-1]
         caring.save()
         return JsonResponse({'created_caring_id': caring.id}, status=200)
 
@@ -91,58 +174,7 @@ class detail_caring(View):
     def get(self, request, id):
         """ 캐링/리캐링 가져오기(자세히보기) """
         try:
-            if id.isdigit():    # 캐링일 경우
-                if Carings.objects.filter(id=id).exists():
-                    target = Carings.objects.get(id=id)
-                    res = {
-                        'is_retweet': False,
-                        "caring_id": target.id,
-                        'owner': {
-                            'name': Profiles.objects.get(user_email=target.user_email).name,
-                            'email': target.user_email.email,
-                            'profile_image': 'http://' + request.get_host() + MEDIA_URL
-                                             + str(Profiles.objects.get(user_email=target.user_email).profile_image)
-                        },
-                        'post_time': target.created_at,
-                        'body': target.caring,
-                        'body_images': [
-                            ''  # fixme : 실제 값 넣어주기
-                        ],
-                        'carat_count': len(CaratList.objects.filter(caring=target)),
-                        'retweet_count': len(Recarings.objects.filter(caring=target)),
-                        "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
-                        "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
-                    }
-                    return JsonResponse(res, status=200)
-                return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
-
-            elif id[0] == 'r' and id[1:].isdigit():    # 리캐링일 경우
-                if Recarings.objects.filter(id=id).exists():
-                    link = Recarings.objects.get(id=id)
-                    target = link.carings
-                    res = {
-                        'is_retweet': True,
-                        "recaring_name": Profiles.objects.get(user_email=link.user_email).name,
-                        "recaring_id": link.id,
-                        "caring_id": target.id,
-                        'owner': {
-                            'name': Profiles.objects.get(user_email=target.user_email).name,
-                            'email': target.user_email.email,
-                            'profile_image': 'http://' + request.get_host() + MEDIA_URL
-                                             + str(Profiles.objects.get(user_email=target.user_email).profile_image)
-                        },
-                        'post_time': target.created_at,
-                        'body': target.caring,
-                        'body_images': [
-                            ''  # fixme : 실제 값 넣어주기
-                        ],
-                        'carat_count': len(CaratList.objects.filter(caring=target)),
-                        'retweet_count': len(Recarings.objects.filter(caring=target)),
-                        "me_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
-                        "me_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
-                    }
-                    return JsonResponse(res, status=200)
-                return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+            return JsonResponse(caring_detail(request=request, id=id), status=200)
         except KeyError:
             return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
 
