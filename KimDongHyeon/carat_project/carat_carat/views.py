@@ -13,7 +13,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import time
 
-# TODO 캐링 수정, 삭제 : 이미지 처리 안해줌
+# TODO 캐링 자세히 보기 : 이미지 넣어주기
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -168,8 +168,10 @@ class edit_caring(View):
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    target.caring = request.POST.get('caring')
                     print('삭제할 캐링:', target)
+                    for file in default_storage.listdir('images/carings/')[1]:
+                        if str(target.id) + '-' in file:
+                            default_storage.delete('images/carings/' + file)
                     target.delete()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
