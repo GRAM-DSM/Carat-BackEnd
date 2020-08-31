@@ -13,7 +13,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import time
 
-# TODO 캐링 자세히 보기 : 이미지 넣어주기
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -52,9 +51,7 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': [
-                    ''  # fixme : 실제 값 넣어주기
-                ],
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + url for url in target.image.split(';')],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
@@ -82,9 +79,7 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': [
-                    ''  # fixme : 실제 값 넣어주기
-                ],
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + url for url in target.image.split(';')],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
