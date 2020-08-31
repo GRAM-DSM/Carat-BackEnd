@@ -12,6 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 import time
+import os
 
 # TODO 캐링 생성, 수정, 삭제 : 이미지 처리 안해줌
 # TODO 타임라인 : 걍 안해줌
@@ -99,7 +100,13 @@ def caring_detail(request, id):
 def file_upload(path, image_name, image):
     """ 장고의 미디어 링크로 파일을 업로드 하는 함수
         :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
-    fs = default_storage.save(path + image_name, image)
+    # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
+    for file in os.listdir(MEDIA_ROOT+'/'+path):
+        if image_name.split('.')[0] in file:
+            default_storage.delete(path + file)
+            break
+    # 이미지 저장
+    default_storage.save(path + image_name, image)
     return default_storage.url(image_name)
 
 
@@ -111,17 +118,18 @@ class create_caring(View):
     def post(self, request):
         """ 캐링 생성하기 """
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
-        print(request.FILES)
-        for i, image in request.FILES.items():
-            image_url = file_upload('images/carings/', i[-1]+'.'+image.name.split('.')[-1], image)
-            print(image_url)
-        print(ppap)
+        print('이미지:', request.FILES)
         caring = Carings(
             user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
-            image='',  # fixme : 실제 값 넣어주기
+            image='',
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
         )
+        caring.save()
+        for i, image in request.FILES.items():
+            image_url = file_upload('images/carings/', str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1], image)
+            caring.image += str(caring.id)+'-'+i[-1]+'.'+image.name.split('.')[-1] + ';'
+        caring.image = caring.image[:-1]
         caring.save()
         return JsonResponse({'created_caring_id': caring.id}, status=200)
 
