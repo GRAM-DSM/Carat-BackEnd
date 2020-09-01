@@ -13,8 +13,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import time
 
-# TODO 타임라인 : 걍 안해줌
-
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
@@ -55,10 +53,8 @@ def caring_detail(request, id):
                                 for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
-                "am_i_recaring": Recarings.objects.filter(caring=target).filter(
-                    user_email=request.user.email).exists(),
-                "am_i_carat": CaratList.objects.filter(caring=target).filter(
-                    carat_user_email=request.user.email).exists(),
+                "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
+                "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
             }
             print(res)
             return res
@@ -85,10 +81,8 @@ def caring_detail(request, id):
                                 for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
-                "me_recaring": Recarings.objects.filter(caring=target).filter(
-                    user_email=request.user.email).exists(),
-                "me_carat": CaratList.objects.filter(caring=target).filter(
-                    carat_user_email=request.user.email).exists(),
+                "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
+                "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists()
             }
             return res
         return -1
@@ -117,7 +111,7 @@ class create_caring(View):
         print('게시자:', request.user.email, '본문:', request.POST['caring'])
         print('이미지:', request.FILES)
         caring = Carings(
-            user_email=Users.objects.get(email=request.user.email),
+            user_email=request.user,
             caring=request.POST['caring'],
             image='',
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
@@ -139,7 +133,7 @@ class edit_caring(View):
         try:
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
-                if target.user_email == Users.objects.get(email=request.user.email):
+                if target.user_email == request.user:
                     target.caring = request.POST.get('caring')
                     # 일단 기존의 이미지 삭제
                     target.image = ''
@@ -165,7 +159,7 @@ class edit_caring(View):
         try:
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
-                if target.user_email == Users.objects.get(email=request.user.email):
+                if target.user_email == request.user:
                     print('삭제할 캐링:', target)
                     for file in default_storage.listdir('images/carings/')[1]:
                         if str(target.id) == file.split('-')[0]:
@@ -206,15 +200,9 @@ class do_carat(View):
                 return JsonResponse({'message': '캐럿할 리캐링이 존재하지 않습니다!'}, status=404)
         if Carings.objects.filter(id=id).exists():
             print('캐럿대상 글:', id, ' 캐럿하는 사람:', request.user.email)
-            if CaratList.objects.filter(
-                carat_user_email=Users.objects.get(email=request.user.email),
-                caring=Carings.objects.get(id=id)
-            ).exists():
+            if CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id)).exists():
                 return JsonResponse({'message': '이미 이캐링에 캐럿하였습니다!'}, status=400)
-            CaratList(
-                carat_user_email=Users.objects.get(email=request.user.email),
-                caring=Carings.objects.get(id=id)
-            ).save()
+            CaratList(carat_user_email=request.user, caring=Carings.objects.get(id=id)).save()
             return HttpResponse(status=200)
         return JsonResponse({'message': '캐럿할 캐링이 존재하지 않습니다!'}, status=404)
 
@@ -228,14 +216,8 @@ class do_carat(View):
                 return JsonResponse({'message': '캐럿취소할 리캐링이 존재하지 않습니다!'}, status=404)
         if Carings.objects.filter(id=id).exists():
             print('캐럿취소대상 글:', id, ' 캐럿취소하는 사람:', request.user.email)
-            if CaratList.objects.filter(
-                carat_user_email=Users.objects.get(email=request.user.email),
-                caring=Carings.objects.get(id=id)
-            ).exists():
-                carat = CaratList.objects.filter(
-                    carat_user_email=Users.objects.get(email=request.user.email),
-                    caring=Carings.objects.get(id=id)
-                )
+            if CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id)).exists():
+                carat = CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id))
                 print('삭제할 캐럿:', carat)
                 carat.delete()
                 return HttpResponse(status=200)
@@ -259,7 +241,7 @@ class read_carat_list(View):
                 profile = Profiles.objects.get(user_email=carat.carat_user_email)
                 is_following = FollowList.objects.filter(
                     followed_user_email=carat.carat_user_email,
-                    follow_user_email=Users.objects.get(email=request.user.email)
+                    follow_user_email=request.user
                 ).exists()
                 res = {
                     "name": profile.name,
@@ -289,7 +271,7 @@ class create_recaring(View):
         if Carings.objects.filter(id=request.POST.get('id')).exists():
             recaring = Recarings(
                 id=recaring_id,
-                user_email=Users.objects.get(email=request.user.email),
+                user_email=request.user,
                 caring=Carings.objects.get(id=request.POST.get('id')),
                 created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp()))
             )
@@ -304,7 +286,7 @@ class delete_recaring(View):
         """ 리캐링 취소하기 """
         if Recarings.objects.filter(id=id).exists():
             target = Recarings.objects.get(id=id)
-            if target.user_email == Users.objects.get(email=request.user.email):
+            if target.user_email == request.user:
                 print('취소할 리캐링:', target)
                 target.delete()
                 return HttpResponse(status=200)
@@ -316,7 +298,7 @@ class delete_recaring(View):
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined
 
 class read_timeline(View):
-    def get(self, request):
+    def get(self, request):     # TODO 구현 안됨
         """ 타임라인 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
@@ -324,14 +306,16 @@ class read_timeline(View):
 
 
 class read_profile_caring_timeline(View):
-    def get(self, request, email):
+    def get(self, request, email):   # TODO 구현 안됨
+        """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
         return JsonResponse({'a': '2'}, status=200)
 
 
 class read_profile_carat_timeline(View):
-    def get(self, request, email):
-        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+    def get(self, request, email):  # TODO 구현 안됨
+        """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
+        query_set = CaratList.objects.filter(carat_user_email=request.user)
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
         return JsonResponse({'a': '3'}, status=200)
