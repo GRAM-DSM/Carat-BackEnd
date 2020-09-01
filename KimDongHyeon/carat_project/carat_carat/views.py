@@ -13,8 +13,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 import time
 
-# TODO 타임라인 : 걍 안해줌
-
 
 def login_decorator(func):
     """ 로그인했는지 여부를 인증하는 데코레이터 """
@@ -316,7 +314,7 @@ class delete_recaring(View):
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined
 
 class read_timeline(View):
-    def get(self, request):
+    def get(self, request):     # TODO 구현 안됨
         """ 타임라인 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
@@ -324,14 +322,16 @@ class read_timeline(View):
 
 
 class read_profile_caring_timeline(View):
-    def get(self, request, email):
+    def get(self, request, email):   # TODO 구현 안됨
+        """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
         return JsonResponse({'a': '2'}, status=200)
 
 
 class read_profile_carat_timeline(View):
-    def get(self, request, email):
-        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+    def get(self, request, email):  # TODO 구현 안됨
+        """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
+        query_set = CaratList.objects.filter(carat_user_email=request.user)
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
         return JsonResponse({'a': '3'}, status=200)
