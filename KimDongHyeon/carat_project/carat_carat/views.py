@@ -51,9 +51,8 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': dict(
-                    (url.split('.')[0].split('-')[-1], 'http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url)
-                    for url in target.image.split(';')),
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
+                                for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
@@ -82,9 +81,8 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': dict(
-                    (url.split('.')[0].split('-')[-1], 'http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url)
-                    for url in target.image.split(';')),
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
+                                for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
