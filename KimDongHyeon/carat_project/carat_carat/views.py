@@ -55,9 +55,9 @@ def caring_detail(request, id):
                                 for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
-                "me_recaring": Recarings.objects.filter(caring=target).filter(
+                "am_i_recaring": Recarings.objects.filter(caring=target).filter(
                     user_email=request.user.email).exists(),
-                "me_carat": CaratList.objects.filter(caring=target).filter(
+                "am_i_carat": CaratList.objects.filter(caring=target).filter(
                     carat_user_email=request.user.email).exists(),
             }
             print(res)
@@ -318,7 +318,12 @@ class delete_recaring(View):
 class read_timeline(View):
     def get(self, request):
         """ 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        print(query_set)
+        id_list = []
+        for i in sorted(query_set, key=lambda x: x.created_at):
+            print(i.id, i.created_at)
+        return JsonResponse({'a': 'b'}, status=200)
 
 
 class read_profile_caring_timeline(View):
