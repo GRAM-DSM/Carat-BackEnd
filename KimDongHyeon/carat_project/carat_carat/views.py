@@ -170,7 +170,7 @@ class edit_caring(View):
                 if target.user_email == Users.objects.get(email=request.user.email):
                     print('삭제할 캐링:', target)
                     for file in default_storage.listdir('images/carings/')[1]:
-                        if str(target.id) + '-' in file:
+                        if str(target.id) == file.split('-')[0]:
                             default_storage.delete('images/carings/' + file)
                     target.delete()
                     return HttpResponse(status=200)
