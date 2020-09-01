@@ -51,11 +51,12 @@ def caring_detail(request, id):
                 'body': target.caring,
                 'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
                                 for url in target.image.split(';') if url],
-                'carat_count': len(CaratList.objects.filter(caring=target)),
-                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                'carat_count': CaratList.objects.filter(caring=target).count(),
+                'retweet_count': Recarings.objects.filter(caring=target).count(),
                 "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                 "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
             }
+            print(res)
             print(res)
             return res
         return -1
@@ -79,8 +80,8 @@ def caring_detail(request, id):
                 'body': target.caring,
                 'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
                                 for url in target.image.split(';') if url],
-                'carat_count': len(CaratList.objects.filter(caring=target)),
-                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                'carat_count': CaratList.objects.filter(caring=target).count(),
+                'retweet_count': Recarings.objects.filter(caring=target).count(),
                 "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                 "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists()
             }
