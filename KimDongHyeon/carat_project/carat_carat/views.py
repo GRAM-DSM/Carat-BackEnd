@@ -303,7 +303,7 @@ class read_timeline(View):
     def get(self, request):     # TODO 구현 안됨
         """ 타임라인 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
-        timeline_list = [query for query in sorted(query_set, key=lambda x: x.created_at)]
+        timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
         print(timeline_list)
         for i in timeline_list:
             print(i.created_at)
@@ -315,7 +315,7 @@ class read_profile_caring_timeline(View):
     def get(self, request, email):   # TODO 구현 안됨
         """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
         query_set = list(Carings.objects.filter(user_email=email)) + list(Recarings.objects.filter(user_email=email))
-        timeline_list = [query for query in sorted(query_set, key=lambda x: x.created_at)]
+        timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
         print(timeline_list)
         for i in timeline_list:
             print(i.created_at)
@@ -327,7 +327,7 @@ class read_profile_carat_timeline(View):
     def get(self, request, email):  # TODO 구현 안됨
         """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
         query_set = [query.caring for query in CaratList.objects.filter(carat_user_email=email)]
-        timeline_list = [query for query in sorted(query_set, key=lambda x: x.created_at)]
+        timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
         print(timeline_list)
         for i in timeline_list:
             print(i.created_at)
