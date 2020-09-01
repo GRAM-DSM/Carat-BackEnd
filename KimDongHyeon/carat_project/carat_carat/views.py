@@ -68,7 +68,7 @@ def caring_detail(request, id):
     elif id[0] == 'r' and id[1:].isdigit():  # 리캐링일 경우
         if Recarings.objects.filter(id=id).exists():
             link = Recarings.objects.get(id=id)
-            target = link.carings
+            target = link.caring
             res = {
                 'is_retweet': True,
                 "recaring_name": Profiles.objects.get(user_email=link.user_email).name,
@@ -323,41 +323,41 @@ def timeline_detail(request, query_set, base_time, size):
     first_id = 0
     if base_time != '':
         for i, post in enumerate(timeline_list):
-            if post.created_at < base_time:
+            if str(post.created_at) < base_time:
                 first_id = i
                 break
     # size 개수 만큼의 캐링/리캐링 추출 및, 각각 json 데이터로 리스트를 저장
     res_li = []
     for post in timeline_list[first_id: first_id + int(size)]:
-        res_li.append(caring_detail(request=request, id=post.id))
+        res_li.append(caring_detail(request=request, id=str(post.id)))
     return res_li
 
 
 class read_timeline(View):
     @login_decorator
-    def get(self, request, size, base_time):     # TODO 구현 안됨
+    def get(self, request):     # TODO 구현 안됨
         """ 타임라인 가져오기 """
         # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
-        result = timeline_detail(request=request, query_set=query_set, base_time=base_time, size=size)
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
         return JsonResponse({'result': result}, status=200)
 
 
 class read_profile_caring_timeline(View):
     @login_decorator
-    def get(self, request, email, size, base_time):   # TODO 구현 안됨
+    def get(self, request, email):   # TODO 구현 안됨
         """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
         # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = list(Carings.objects.filter(user_email=email)) + list(Recarings.objects.filter(user_email=email))
-        result = timeline_detail(request=request, query_set=query_set, base_time=base_time, size=size)
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
         return JsonResponse({'result': result}, status=200)
 
 
 class read_profile_carat_timeline(View):
     @login_decorator
-    def get(self, request, email, size, base_time):  # TODO 구현 안됨
+    def get(self, request, email):  # TODO 구현 안됨
         """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
         # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = [query.caring for query in CaratList.objects.filter(carat_user_email=email)]
-        result = timeline_detail(request=request, query_set=query_set, base_time=base_time, size=size)
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
         return JsonResponse({'result': result}, status=200)
