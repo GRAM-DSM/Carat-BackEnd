@@ -316,6 +316,5 @@ class read_profile_caring_timeline(View):
 class read_profile_carat_timeline(View):
     def get(self, request, email):  # TODO 구현 안됨
         """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
-        query_set = CaratList.objects.filter(carat_user_email=request.user)
-        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        timeline_list = CaratList.objects.filter(carat_user_email=request.user).order_by()
         return JsonResponse({'a': '3'}, status=200)
