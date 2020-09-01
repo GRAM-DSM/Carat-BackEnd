@@ -281,7 +281,7 @@ class create_recaring(View):
     def post(self, request):
         """ 리캐링 생성하기 """
         # 일단 리캐링의 id를 생성
-        recaring_id = 'r1'
+        recaring_id = ''
         if Recarings.objects.all().exists():
             recaring_id = f"r{int(Recarings.objects.order_by('-id')[0].id[1:])+1}"
             print('recaring_id:', recaring_id)
@@ -319,10 +319,7 @@ class read_timeline(View):
     def get(self, request):
         """ 타임라인 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
-        print(query_set)
-        id_list = []
-        for i in sorted(query_set, key=lambda x: x.created_at):
-            print(i.id, i.created_at)
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
         return JsonResponse({'a': 'b'}, status=200)
 
 
