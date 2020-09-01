@@ -51,7 +51,9 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': ['http://' + request.get_host() + MEDIA_URL + url for url in target.image.split(';')],
+                'body_images': dict(
+                    (url.split('.')[0].split('-')[-1], 'http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url)
+                    for url in target.image.split(';')),
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
@@ -59,8 +61,9 @@ def caring_detail(request, id):
                 "me_carat": CaratList.objects.filter(caring=target).filter(
                     carat_user_email=request.user.email).exists(),
             }
+            print(res)
             return res
-        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return -1
 
     elif id[0] == 'r' and id[1:].isdigit():  # 리캐링일 경우
         if Recarings.objects.filter(id=id).exists():
@@ -79,7 +82,9 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': ['http://' + request.get_host() + MEDIA_URL + url for url in target.image.split(';')],
+                'body_images': dict(
+                    (url.split('.')[0].split('-')[-1], 'http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url)
+                    for url in target.image.split(';')),
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
@@ -88,7 +93,7 @@ def caring_detail(request, id):
                     carat_user_email=request.user.email).exists(),
             }
             return res
-        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return -1
 
 
 def file_upload(path, image_name, image):
@@ -180,7 +185,11 @@ class detail_caring(View):
     def get(self, request, id):
         """ 캐링/리캐링 가져오기(자세히보기) """
         try:
-            return JsonResponse(caring_detail(request=request, id=id), status=200)
+            res = caring_detail(request=request, id=id)
+            print(res)
+            if res == -1:
+                return JsonResponse({'message': '해당 캐링을 찾을 수 없습니다!'}, status=404)
+            return JsonResponse(res, status=200)
         except KeyError:
             return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
 
