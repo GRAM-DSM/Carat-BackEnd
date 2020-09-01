@@ -12,9 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 import time
-import os
 
-# TODO 캐링 수정, 삭제 : 이미지 처리 안해줌
 # TODO 타임라인 : 걍 안해줌
 
 
@@ -53,18 +51,18 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': [
-                    ''  # fixme : 실제 값 넣어주기
-                ],
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
+                                for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
-                "me_recaring": Recarings.objects.filter(caring=target).filter(
+                "am_i_recaring": Recarings.objects.filter(caring=target).filter(
                     user_email=request.user.email).exists(),
-                "me_carat": CaratList.objects.filter(caring=target).filter(
+                "am_i_carat": CaratList.objects.filter(caring=target).filter(
                     carat_user_email=request.user.email).exists(),
             }
+            print(res)
             return res
-        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return -1
 
     elif id[0] == 'r' and id[1:].isdigit():  # 리캐링일 경우
         if Recarings.objects.filter(id=id).exists():
@@ -83,9 +81,8 @@ def caring_detail(request, id):
                 },
                 'post_time': target.created_at,
                 'body': target.caring,
-                'body_images': [
-                    ''  # fixme : 실제 값 넣어주기
-                ],
+                'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
+                                for url in target.image.split(';') if url],
                 'carat_count': len(CaratList.objects.filter(caring=target)),
                 'retweet_count': len(Recarings.objects.filter(caring=target)),
                 "me_recaring": Recarings.objects.filter(caring=target).filter(
@@ -94,14 +91,14 @@ def caring_detail(request, id):
                     carat_user_email=request.user.email).exists(),
             }
             return res
-        return JsonResponse({'message': '자세히 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return -1
 
 
 def file_upload(path, image_name, image):
     """ 장고의 미디어 링크로 파일을 업로드 하는 함수
         :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
     # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
-    for file in os.listdir(MEDIA_ROOT+'/'+path):
+    for file in default_storage.listdir(path)[1]:
         if image_name.split('.')[0] in file:
             default_storage.delete(path + file)
             break
@@ -144,7 +141,17 @@ class edit_caring(View):
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
                     target.caring = request.POST.get('caring')
-                    target.image = ''  # fixme : 실제 값 넣어주기
+                    # 일단 기존의 이미지 삭제
+                    target.image = ''
+                    for file in default_storage.listdir('images/carings/')[1]:
+                        if str(target.id)+'-' in file:
+                            default_storage.delete('images/carings/' + file)
+                    # 새 이미지로 수정
+                    for i, image in request.FILES.items():
+                        image_url = file_upload('images/carings/',
+                                                str(target.id) + '-' + i[-1] + '.' + image.name.split('.')[-1], image)
+                        target.image += str(target.id) + '-' + i[-1] + '.' + image.name.split('.')[-1] + ';'
+                    target.image = target.image[:-1]
                     target.save()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '수정할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
@@ -159,8 +166,10 @@ class edit_caring(View):
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    target.caring = request.POST.get('caring')
                     print('삭제할 캐링:', target)
+                    for file in default_storage.listdir('images/carings/')[1]:
+                        if str(target.id) == file.split('-')[0]:
+                            default_storage.delete('images/carings/' + file)
                     target.delete()
                     return HttpResponse(status=200)
                 return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 캐링이 아님)'}, status=403)
@@ -174,7 +183,11 @@ class detail_caring(View):
     def get(self, request, id):
         """ 캐링/리캐링 가져오기(자세히보기) """
         try:
-            return JsonResponse(caring_detail(request=request, id=id), status=200)
+            res = caring_detail(request=request, id=id)
+            print(res)
+            if res == -1:
+                return JsonResponse({'message': '해당 캐링을 찾을 수 없습니다!'}, status=404)
+            return JsonResponse(res, status=200)
         except KeyError:
             return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
 
@@ -268,7 +281,7 @@ class create_recaring(View):
     def post(self, request):
         """ 리캐링 생성하기 """
         # 일단 리캐링의 id를 생성
-        recaring_id = 'r1'
+        recaring_id = ''
         if Recarings.objects.all().exists():
             recaring_id = f"r{int(Recarings.objects.order_by('-id')[0].id[1:])+1}"
             print('recaring_id:', recaring_id)
@@ -305,16 +318,20 @@ class delete_recaring(View):
 class read_timeline(View):
     def get(self, request):
         """ 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        return JsonResponse({'a': '1'}, status=200)
 
 
 class read_profile_caring_timeline(View):
     def get(self, request, email):
-        """ 프로필 캐링 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        return JsonResponse({'a': '2'}, status=200)
 
 
 class read_profile_carat_timeline(View):
     def get(self, request, email):
-        """ 프로필 캐럿 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        return JsonResponse({'a': '3'}, status=200)
