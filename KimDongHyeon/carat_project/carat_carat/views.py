@@ -33,8 +33,12 @@ def login_decorator(func):
 
 
 def caring_detail(request, id):
-    """ 캐링/리캐링을 자세히 볼때 사용하는 함수
-        :request: API 요청으로 받아온 인자 값    :id: 캐링/리캐링의 id 값 """
+    """
+    캐링/리캐링을 json 형태로 자세히 나타내는 함수
+    :param request: 클라이언트가 요청(request)한 정보
+    :param id: 자세히 나타낼 캐링/리캐링의 id 값
+    :return: 자세히 나타낸 캐링/리캐링의 json 형태를 반환
+    """
     if id.isdigit():  # 캐링일 경우
         if Carings.objects.filter(id=id).exists():
             target = Carings.objects.get(id=id)
@@ -51,11 +55,12 @@ def caring_detail(request, id):
                 'body': target.caring,
                 'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
                                 for url in target.image.split(';') if url],
-                'carat_count': len(CaratList.objects.filter(caring=target)),
-                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                'carat_count': CaratList.objects.filter(caring=target).count(),
+                'retweet_count': Recarings.objects.filter(caring=target).count(),
                 "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                 "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists(),
             }
+            print(res)
             print(res)
             return res
         return -1
@@ -63,7 +68,7 @@ def caring_detail(request, id):
     elif id[0] == 'r' and id[1:].isdigit():  # 리캐링일 경우
         if Recarings.objects.filter(id=id).exists():
             link = Recarings.objects.get(id=id)
-            target = link.carings
+            target = link.caring
             res = {
                 'is_retweet': True,
                 "recaring_name": Profiles.objects.get(user_email=link.user_email).name,
@@ -79,8 +84,8 @@ def caring_detail(request, id):
                 'body': target.caring,
                 'body_images': ['http://' + request.get_host() + MEDIA_URL + 'images/carings/' + url
                                 for url in target.image.split(';') if url],
-                'carat_count': len(CaratList.objects.filter(caring=target)),
-                'retweet_count': len(Recarings.objects.filter(caring=target)),
+                'carat_count': CaratList.objects.filter(caring=target).count(),
+                'retweet_count': Recarings.objects.filter(caring=target).count(),
                 "am_i_recaring": Recarings.objects.filter(caring=target).filter(user_email=request.user.email).exists(),
                 "am_i_carat": CaratList.objects.filter(caring=target).filter(carat_user_email=request.user.email).exists()
             }
@@ -89,8 +94,13 @@ def caring_detail(request, id):
 
 
 def file_upload(path, image_name, image):
-    """ 장고의 미디어 링크로 파일을 업로드 하는 함수
-        :path: 이미지 저장될 경로    :image_name: 이미지 저장될 이름    :image: 실제 이미지 데이터 """
+    """
+    장고의 미디어로 직접 파일을 저장하는 함수
+    :param path: 저장할 파일의 경로 (/media/ 안의 세부적인 경로)
+    :param image_name: 저장할 파일명
+    :param image: 저장할 파일(이미지)
+    :return: 성공적으로 저장된 파일의 경로를 반환
+    """
     # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
     for file in default_storage.listdir(path)[1]:
         if image_name.split('.')[0] in file:
@@ -297,24 +307,57 @@ class delete_recaring(View):
 # timeline API
 # https://app.gitbook.com/@carat-1/s/gogo/1./undefined
 
+def timeline_detail(request, query_set, base_time, size):
+    """
+    타임라인의 캐링/리캐링의 자세한 정보를 각각 json으로 구해서 배열로 나타내는 함수
+    :param request: 각각의 캐링/리캐링을 caring_detail 함수로 넘겨줄 때 인자값으로 사용
+    :param query_set: 입력받는 전체 쿼리셋
+    :param base_time: 뽑아낼 캐링/리캐링 배열의 기준이 되는 시각 값 (이 시각 이전에 생성된 캐링/리캐링을 기준으로 삼음)
+    :param size: 캐링/리캐링 배열에서 몇개의 캐링/리캐링을 뽑아낼지 정해주는 값
+    :return: 자세히 json 형태로 나타낸 캐링/리캐링 배열을 반환
+    """
+    if not query_set:
+        return JsonResponse({'result': []}, status=200)
+    timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
+    # base_time 이후에 나온 첫번째 캐링/리캐링 추출
+    first_id = 0
+    if base_time != '':
+        for i, post in enumerate(timeline_list):
+            if str(post.created_at) < base_time:
+                first_id = i
+                break
+    # size 개수 만큼의 캐링/리캐링 추출 및, 각각 json 데이터로 리스트를 저장
+    res_li = []
+    for post in timeline_list[first_id: first_id + int(size)]:
+        res_li.append(caring_detail(request=request, id=str(post.id)))
+    return res_li
+
+
 class read_timeline(View):
-    def get(self, request):     # TODO 구현 안됨
+    @login_decorator
+    def get(self, request):
         """ 타임라인 가져오기 """
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
-        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
-        return JsonResponse({'a': '1'}, status=200)
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
+        return JsonResponse({'result': result}, status=200)
 
 
 class read_profile_caring_timeline(View):
-    def get(self, request, email):   # TODO 구현 안됨
+    @login_decorator
+    def get(self, request, email):
         """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
-        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
-        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
-        return JsonResponse({'a': '2'}, status=200)
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
+        query_set = list(Carings.objects.filter(user_email=email)) + list(Recarings.objects.filter(user_email=email))
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
+        return JsonResponse({'result': result}, status=200)
 
 
 class read_profile_carat_timeline(View):
-    def get(self, request, email):  # TODO 구현 안됨
+    @login_decorator
+    def get(self, request, email):
         """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
-        timeline_list = CaratList.objects.filter(carat_user_email=request.user).order_by()
-        return JsonResponse({'a': '3'}, status=200)
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
+        query_set = [query.caring for query in CaratList.objects.filter(carat_user_email=email)]
+        result = timeline_detail(request=request, query_set=query_set, base_time=request.GET['base_time'], size=request.GET['size'])
+        return JsonResponse({'result': result}, status=200)
