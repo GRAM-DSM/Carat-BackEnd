@@ -320,16 +320,18 @@ class read_timeline(View):
         """ 타임라인 가져오기 """
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
         timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
-        return JsonResponse({'a': 'b'}, status=200)
+        return JsonResponse({'a': '1'}, status=200)
 
 
 class read_profile_caring_timeline(View):
     def get(self, request, email):
-        """ 프로필 캐링 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        return JsonResponse({'a': '2'}, status=200)
 
 
 class read_profile_carat_timeline(View):
     def get(self, request, email):
-        """ 프로필 캐럿 타임라인 가져오기 """
-        pass
+        query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        timeline_list = [query.id for query in sorted(query_set, key=lambda x: x.created_at)]
+        return JsonResponse({'a': '3'}, status=200)
