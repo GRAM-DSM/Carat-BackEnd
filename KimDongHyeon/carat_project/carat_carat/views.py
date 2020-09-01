@@ -300,21 +300,35 @@ class delete_recaring(View):
 
 class read_timeline(View):
     @login_decorator
-    def get(self, request):     # TODO 구현 안됨
+    def get(self, request, size, base_time):     # TODO 구현 안됨
         """ 타임라인 가져오기 """
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = list(Carings.objects.all()) + list(Recarings.objects.all())
+        if not query_set:
+            return JsonResponse({'result': []}, status=200)
         timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
-        print(timeline_list)
-        for i in timeline_list:
-            print(i.created_at)
-        return JsonResponse({'a': '1'}, status=200)
+        # base_time 이후에 나온 첫번째 캐링/리캐링 추출
+        first_id = 0
+        if base_time != '':
+            for i, post in enumerate(timeline_list):
+                if post.created_at < base_time:
+                    first_id = i
+                    break
+        # size 개수 만큼의 캐링/리캐링 추출 및, 각각 json 데이터로 리스트를 저장
+        res_li = []
+        for post in timeline_list[first_id: first_id+int(base_time)]:
+            res_li.append(caring_detail(request=request, id=post.id))
+        return JsonResponse({'result': res_li}, status=200)
 
 
 class read_profile_caring_timeline(View):
     @login_decorator
-    def get(self, request, email):   # TODO 구현 안됨
+    def get(self, request, email, size, base_time):   # TODO 구현 안됨
         """ 프로필에서 해당 유저의 캐링, 리캐링만 가져오기 """
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = list(Carings.objects.filter(user_email=email)) + list(Recarings.objects.filter(user_email=email))
+        if not query_set:
+            return JsonResponse({'result': []}, status=200)
         timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
         print(timeline_list)
         for i in timeline_list:
@@ -324,11 +338,14 @@ class read_profile_caring_timeline(View):
 
 class read_profile_carat_timeline(View):
     @login_decorator
-    def get(self, request, email):  # TODO 구현 안됨
+    def get(self, request, email, size, base_time):  # TODO 구현 안됨
         """ 프로필에서 해당 유저가 캐럿한 캐링만 가져오기 """
+        # 조건에 해당하는 쿼리셋 추출 + 정렬
         query_set = [query.caring for query in CaratList.objects.filter(carat_user_email=email)]
+        if not query_set:
+            return JsonResponse({'result': []}, status=200)
         timeline_list = list(sorted(query_set, key=lambda x: x.created_at, reverse=True))
         print(timeline_list)
         for i in timeline_list:
             print(i.created_at)
-        return JsonResponse({'a': '3'}, status=200)
+        return JsonResponse({'result': []}, status=200)
