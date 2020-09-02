@@ -6,15 +6,13 @@
 DROP DATABASE if exists carat;
 CREATE DATABASE carat;
 USE carat;
-CREATE TABLE users 
-(
+CREATE TABLE users (
 	email 			VARCHAR(80) 	NOT NULL,
     hashed_password VARCHAR(120) 	NOT NULL,
     created_at 		TIMESTAMP 		NOT NULL 	DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (email)
 );
-CREATE TABLE carings
-(
+CREATE TABLE carings(
 	id 				INT 			AUTO_INCREMENT,
     user_email 		VARCHAR(80) 	NOT NULL,
     caring 			VARCHAR(300) 	NOT NULL,
@@ -23,8 +21,7 @@ CREATE TABLE carings
     PRIMARY KEY (id),
     CONSTRAINT carings_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade
 );
-CREATE TABLE recarings
-(
+CREATE TABLE recarings(
 	id				VARCHAR(10),	
 	user_email 		VARCHAR(80) 	NOT NULL,
     caring_id 		INT 			NOT NULL,
@@ -33,8 +30,7 @@ CREATE TABLE recarings
     CONSTRAINT recarings_carat_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade,
     CONSTRAINT recarings_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) on delete cascade 
 );
-CREATE TABLE profiles
-(
+CREATE TABLE profiles(
 	user_email 		VARCHAR(80) 	NOT NULL,
     name 			VARCHAR(80) 	NOT NULL,
     profile_image 	VARCHAR(120) 	NOT NULL,
@@ -42,8 +38,7 @@ CREATE TABLE profiles
     about_me        VARCHAR(100)    NOT NULL,
     CONSTRAINT profiles_user_email_fkey FOREIGN KEY (user_email) REFERENCES users(email) on delete cascade
 );
-CREATE TABLE carat_list 
-(
+CREATE TABLE carat_list (
 	id					INT 		AUTO_INCREMENT,	
 	carat_user_email 	VARCHAR(80),
     caring_id 			INT 		NOT NULL,
@@ -51,8 +46,7 @@ CREATE TABLE carat_list
     CONSTRAINT follow_list_carat_user_email_fkey FOREIGN KEY (carat_user_email) REFERENCES users(email) on delete cascade,
     CONSTRAINT follow_list_caring_id_fkey FOREIGN KEY (caring_id) REFERENCES carings(id) on delete cascade
 );
-CREATE TABLE follow_list
-(
+CREATE TABLE follow_list(
 	id						INT 		AUTO_INCREMENT,
 	follow_user_email 		VARCHAR(80),
     followed_user_email 	VARCHAR(80),
