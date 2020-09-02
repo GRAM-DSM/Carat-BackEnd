@@ -84,10 +84,10 @@ WSGI_APPLICATION = 'carat_project.wsgi.application'
 DATABASES = {
     'default': {
          'ENGINE': 'django.db.backends.mysql',
-         'NAME': 'carat',
-         'USER': 'caratid',
-         'PASSWORD': 'caratpassword',
-         'HOST': '127.0.0.1',
+         'NAME': 'CaratServer$carat',
+         'USER': 'CaratServer',
+         'PASSWORD': 'caratcarat',
+         'HOST': 'CaratServer.mysql.pythonanywhere-services.com',
          'PORT': '3306',
 	}
 }
