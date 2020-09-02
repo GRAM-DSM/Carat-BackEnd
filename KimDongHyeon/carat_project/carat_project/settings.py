@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 import pymysql
 import datetime
+import dj_database_url
 
 pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -24,10 +25,10 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'bqviv+%f#4ktyc4^ilf8uqxru-x82x5xrrd$5!salu$zxx7isk'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'bqviv+%f#4ktyc4^ilf8uqxru-x82x5xrrd$5!salu$zxx7isk')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -55,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
 
 ROOT_URLCONF = 'carat_project.urls'
@@ -91,6 +93,9 @@ DATABASES = {
          'PORT': '3306',
 	}
 }
+
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -148,19 +153,3 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
-
-#
-# JWT_AUTH = {
-#     'JWT_SECRET_KEY': SECRET_KEY,
-#     'JWT_ALGORITHM': 'HS256',
-#     'JWT_ALLOW_REFRESH': True,
-#     'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
-#     'JWT_REFRESH_EXPIRATION_DELTA': datetime.timedelta(days=28),
-# }
-#
-# REST_USE_JWT = True
-# ACCOUNT_EMAIL_REQUIRED = False
-# ACCOUNT_EMAIL_VERIFICATION = None
-# ACCOUNT_LOGOUT_ON_GET = True
-
-
