@@ -5,6 +5,7 @@ from .models import *
 # TODO 에러 response 제대로 정리
 # TODO 루트 링크 페이지 만들기
 # TODO 개발 다 끝났으면 디버그 모드 끄기
+# TODO 캐럿 명세서 엑세스 토큰으로 다 명시하기 + 명세서 전체 수정
 
 
 class UsersAdmin(admin.ModelAdmin):
