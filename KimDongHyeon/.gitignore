@@ -6,3 +6,10 @@ carat_project/media/
 
 *.pyc
 *.cpython-37.pyc
+__pycache__/
+*.py[cod]
+.Python
+
+db.sqlite3
+.DS_Store
+
