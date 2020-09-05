@@ -4,6 +4,9 @@ carat_project/carat_project/__pycache__/
 carat_project/db.sqlite3
 carat_project/media/
 
+
+*.pyc
+*.cpython-37.pyc
 __pycache__/
 *.py[cod]
 .Python

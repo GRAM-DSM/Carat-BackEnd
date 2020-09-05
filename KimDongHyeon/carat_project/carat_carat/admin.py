@@ -6,6 +6,7 @@ from .models import *
 # TODO 루트 링크 페이지 만들기
 # TODO 개발 다 끝났으면 디버그 모드 끄기
 # TODO 캐럿 명세서 엑세스 토큰으로 다 명시하기 + 명세서 전체 수정
+# TODO 리캐링 목록 API 만들기
 
 
 class UsersAdmin(admin.ModelAdmin):
@@ -26,6 +27,10 @@ class ProfilesAdmin(admin.ModelAdmin):
 
 class FollowListAdmin(admin.ModelAdmin):
     list_display = ['follow_user_email', 'followed_user_email']
+
+
+class RecaringsAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user_email', 'caring', 'created_at']
 
 
 class RecaringsAdmin(admin.ModelAdmin):
