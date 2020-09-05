@@ -7,7 +7,7 @@ import jwt  # 토큰 발행용
 from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
-from carat_user.views import *
+from carat_user.views import login_decorator
 
 
 class read_profile(View):
