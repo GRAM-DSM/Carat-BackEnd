@@ -35,3 +35,33 @@ class delete_recaring(View):
                 return HttpResponse(status=200)
             return JsonResponse({'message': '삭제할 권한이 없습니다! (내가 생성한 리캐링이 아님)'}, status=403)
         return JsonResponse({'message': '삭제할 리캐링이 존재하지 않습니다!'}, status=404)
+
+
+class read_recaring_list(View):
+    @login_decorator
+    def get(self, request, id):
+        """ 리캐링 리스트 가져오기 """
+        if not id.isdigit():  # 리캐링 리스트를 볼 id가 리캐링일 경우 원본캐링으로 id를 추출
+            if Recarings.objects.filter(id=id).exists():
+                id = Recarings.objects.get(id=id).caring.id
+            else:
+                return JsonResponse({'message': '리캐링이 존재하지 않습니다!'}, status=404)
+        if Carings.objects.filter(id=id).exists():
+            print('id :', id)
+            li = []
+            for recaring in Recarings.objects.filter(caring=Carings.objects.get(id=id)):
+                profile = Profiles.objects.get(user_email=recaring.user_email)
+                is_following = FollowList.objects.filter(
+                    followed_user_email=recaring.user_email,
+                    follow_user_email=Users.objects.get(email=request.user.email)
+                ).exists()
+                res = {
+                    "name": profile.name,
+                    "email": recaring.user_email.email,
+                    "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                    "is_follow": is_following
+                },
+                print(res)
+                li.append(res)
+            return JsonResponse({'result': li}, status=200)
+        return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!'}, status=404)

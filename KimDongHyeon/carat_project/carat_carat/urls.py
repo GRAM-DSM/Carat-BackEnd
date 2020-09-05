@@ -20,7 +20,8 @@ timeline_patterns = [
 
 recaring_patterns = [
     path('', views.create_recaring.as_view()),
-    path('<id>', views.delete_recaring.as_view())
+    path('<id>', views.delete_recaring.as_view()),
+    path('<id>/list', views.read_recaring_list.as_view())
 ]
 
 urlpatterns = [

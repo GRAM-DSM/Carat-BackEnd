@@ -1,3 +1,4 @@
+""" core.py는 다름아니라, carat_carat 의 여러 views.py 에서 공통으로 쓰이는 함수를 선언하거나, 공통으로 쓰이는 모듈을 임포트함 """
 from django.core.files.storage import default_storage
 
 from django.views import View
