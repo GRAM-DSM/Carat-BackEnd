@@ -50,6 +50,9 @@ class read_recaring_list(View):
             print('id :', id)
             li = []
             for recaring in Recarings.objects.filter(caring=Carings.objects.get(id=id)):
+                if li:  # 이미 리캐링한 사람이 리스트에 있으면 중복이므로 continue
+                    if recaring.user_email.email in map(lambda x: x['email'], li):
+                        continue
                 profile = Profiles.objects.get(user_email=recaring.user_email)
                 is_following = FollowList.objects.filter(
                     followed_user_email=recaring.user_email,
@@ -60,7 +63,7 @@ class read_recaring_list(View):
                     "email": recaring.user_email.email,
                     "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                     "is_follow": is_following
-                },
+                }
                 print(res)
                 li.append(res)
             return JsonResponse({'result': li}, status=200)
