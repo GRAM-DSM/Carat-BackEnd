@@ -28,5 +28,6 @@ urlpatterns = [
     path('timeline/', include(timeline_patterns)),
     path('caring/', include(caring_patterns)),
     path('carat/', include(carat_patterns)),
-    path('recaring/', include(recaring_patterns))
+    path('recaring/', include(recaring_patterns)),
+    path('', views.hi.as_view())    # 이스터 에그?
 ]

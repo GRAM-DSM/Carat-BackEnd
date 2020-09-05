@@ -3,7 +3,6 @@ from .models import *
 
 # TODO 프로필 이미지, 커버 이미지 처리 (view, model 둘다 수정)
 # TODO 에러 response 제대로 정리
-# TODO 루트 링크 페이지 만들기
 # TODO 캐럿 명세서 엑세스 토큰으로 다 명시하기 + 명세서 전체 수정
 
 

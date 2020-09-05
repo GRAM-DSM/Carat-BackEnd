@@ -118,3 +118,10 @@ def timeline_detail(request, query_set, base_time, size):
     for post in timeline_list[first_id: first_id + int(size)]:
         res_li.append(caring_detail(request=request, id=str(post.id)))
     return res_li
+
+
+# 이스터 에고?
+class hi(View):
+    def get(self, request):
+        return JsonResponse({"hello!": "안녕하세요 :) 캐럿 서버 for Django(김동현 담당) 에 오신 것을 환영합니다!"},
+                            json_dumps_params={'ensure_ascii': False})
