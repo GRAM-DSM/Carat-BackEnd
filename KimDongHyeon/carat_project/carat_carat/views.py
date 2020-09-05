@@ -1,35 +1,14 @@
-from django.shortcuts import render
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from django.core.files.storage import default_storage
 
-import jwt
 from django.views import View
-from .models import Profiles, Users, Carings, Recarings, CaratList, FollowList
+from .models import *
+from carat_user.views import *
 from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 발행에 사용할 secret key, 이미지를 저장할 경로 MEDIA_ROOT
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 
 from django.utils import timezone
 import time
-
-
-def login_decorator(func):
-    """ 로그인했는지 여부를 인증하는 데코레이터 """
-    def wrapper(self, request, *args, **kwargs):
-        try:
-            access_token = request.headers.get('Authorization', None)
-            payload = jwt.decode(access_token, SECRET_KEY, algorithm='HS256')
-            request.user = Users.objects.get(email=payload['email'])
-        except jwt.exceptions.ExpiredSignatureError:
-            return JsonResponse({'message': '토큰의 서명이 만료되었습니다!'}, status=400)
-        except jwt.exceptions.DecodeError:
-            return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=400)
-        except Users.DoesNotExist:
-            return JsonResponse({'message': '토큰의 사용자 값이 존재하지 않습니다!'}, status=400)
-
-        return func(self, request, *args, **kwargs)
-    return wrapper
 
 
 def caring_detail(request, id):
