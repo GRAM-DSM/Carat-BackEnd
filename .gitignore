@@ -1,2 +1,5 @@
 .idea/
 hidden_memo.txt
+
+*.pyc
+*.cpython-37.pyc
