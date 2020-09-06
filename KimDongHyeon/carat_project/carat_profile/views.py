@@ -8,6 +8,7 @@ from carat_project.settings import SECRET_KEY, MEDIA_ROOT, MEDIA_URL  # 토큰 �
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from carat_user.views import login_decorator
+from carat_carat.views import file_upload
 
 
 class read_profile(View):
@@ -38,17 +39,20 @@ class update_profile(View):
     def post(self, request):
         """ 유저의 프로필 정보 수정하기 """
         try:
-            print(request.user.email)
             if Profiles.objects.filter(user_email=request.user.email).exists():
                 profile = Profiles.objects.get(user_email=request.user.email)
-                print('name:', request.POST['name'],
-                      'about_me:', request.POST['about_me'],
-                      '\nprofile_image:', request.FILES['profile_image'],
-                      '\ncover_image:', request.FILES['cover_image'])
                 profile.name = request.POST['name']
                 profile.about_me = request.POST['about_me']
-                profile.profile_image = request.FILES['profile_image']
-                profile.cover_image = request.FILES['cover_image']
+                # 프로필 이미지가 있으면 업데이트
+                if 'profile_image' in request.FILES:
+                    image = request.FILES['profile_image']
+                    profile.profile_image = profile.user_email.email + '-profile.' + image.name.split('.')[-1]
+                    file_upload('images/profile/', profile.profile_image, image)
+                # 커버 이미지가 있으면 업데이트
+                if 'cover_image' in request.FILES:
+                    image = request.FILES['cover_image']
+                    profile.cover_image = profile.user_email.email + '-cover.' + image.name.split('.')[-1]
+                    file_upload('images/profile/', profile.cover_image, image)
                 profile.save()
                 return HttpResponse(status=200)
             return JsonResponse({'message': '해당 유저의 프로필이 존재하지 않습니다!'}, status=404)

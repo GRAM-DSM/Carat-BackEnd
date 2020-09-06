@@ -1,3 +1,4 @@
+""" core.py는 다름아니라, carat_carat 의 여러 views.py 에서 공통으로 쓰이는 함수를 선언하거나, 공통으로 쓰이는 모듈을 임포트함 """
 from django.core.files.storage import default_storage
 
 from django.views import View
@@ -82,7 +83,7 @@ def file_upload(path, image_name, image):
     """
     # 기존에 이미 같은 이름의 이미지 있을시 기존 이미지 삭제
     for file in default_storage.listdir(path)[1]:
-        if image_name.split('.')[0] in file:
+        if ''.join(image_name.split('.')[:-1]) in file:
             default_storage.delete(path + file)
             break
     # 이미지 저장
@@ -117,3 +118,10 @@ def timeline_detail(request, query_set, base_time, size):
     for post in timeline_list[first_id: first_id + int(size)]:
         res_li.append(caring_detail(request=request, id=str(post.id)))
     return res_li
+
+
+# 이스터 에그?
+class hi(View):
+    def get(self, request):
+        return JsonResponse({"hello!": "안녕하세요 :) 캐럿 서버 for Django(김동현 담당) 에 오신 것을 환영합니다!"},
+                            json_dumps_params={'ensure_ascii': False}, status=200)

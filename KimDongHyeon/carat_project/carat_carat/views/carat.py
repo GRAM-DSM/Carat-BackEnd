@@ -60,7 +60,7 @@ class read_carat_list(View):
                     "email": carat.carat_user_email.email,
                     "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                     "is_follow": is_following
-                },
+                }
                 print(res)
                 li.append(res)
             return JsonResponse({'result': li}, status=200)
