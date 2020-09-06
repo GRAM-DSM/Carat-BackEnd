@@ -58,6 +58,7 @@ class edit_caring(View):
                 target = Carings.objects.get(id=id)
                 if target.user_email == request.user:
                     print('삭제할 캐링:', target)
+                    # 이미지도 미디어 폴더에서 삭제
                     for file in default_storage.listdir('images/carings/')[1]:
                         if str(target.id) == file.split('-')[0]:
                             default_storage.delete('images/carings/' + file)

@@ -44,7 +44,6 @@ class Profiles(models.Model):
         db_table = 'profiles'
 
 
-
 class FollowList(models.Model):
     follow_user_email = models.ForeignKey(Users, on_delete=models.CASCADE, db_column='follow_user_email',
                                           related_name='related_primary')

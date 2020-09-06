@@ -11,6 +11,7 @@ from .models import Users, Profiles
 from django.views import View
 from django.http import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.files.storage import default_storage
 
 
 def login_decorator(func):
@@ -66,10 +67,15 @@ class sign_up(View):
     def delete(self, request):
         """ 계정 삭제(회원 탈퇴) """
         try:
-            print('탈퇴하는 유저:', Users.objects.filter(email=request.user.email)[0].email)
-            Users.objects.filter(email=request.user.email).delete()
-            print('남은 유저:', Users.objects.all())
-            return HttpResponse(status=200)
+            if Users.objects.filter(email=request.user.email):
+                target = Users.objects.get(email=request.user.email)
+                print('탈퇴하는 유저:', target.email)
+                # 삭제할 프로필의 사진들을 미디어 폴더에서 삭제
+                for file in default_storage.listdir('images/profiles/')[1]:
+                    if target.email == file.split('-')[0]:
+                        default_storage.delete('images/profiles/' + file)
+                Users.objects.filter(email=request.user.email).delete()
+                return HttpResponse(status=200)
         except KeyError:
             return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
 
