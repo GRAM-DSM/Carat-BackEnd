@@ -45,7 +45,6 @@ class sign_up(View):
             password = request.POST['password'].encode('utf-8')  # (비밀번호 암호화1) 입력된 패스워드를 바이트 형태로 인코딩
             password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # (비밀번호 암호화2) 암호화된 비밀번호 생성
             password_crypt = password_crypt.decode('utf-8')  # (비밀번호 암호화3) DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-            print(f'암호화 된 비밀번호 : {password_crypt}    비밀번호 길이 :', len(password_crypt))
             users = Users(
                 email=request.POST['email'],
                 hashed_password=password_crypt,    # 암호화된 비밀번호를 저장
@@ -71,9 +70,9 @@ class sign_up(View):
                 target = Users.objects.get(email=request.user.email)
                 print('탈퇴하는 유저:', target.email)
                 # 삭제할 프로필의 사진들을 미디어 폴더에서 삭제
-                for file in default_storage.listdir('images/profiles/')[1]:
+                for file in default_storage.listdir('images/profile/')[1]:
                     if target.email == file.split('-')[0]:
-                        default_storage.delete('images/profiles/' + file)
+                        default_storage.delete('images/profile/' + file)
                 Users.objects.filter(email=request.user.email).delete()
                 return HttpResponse(status=200)
         except KeyError:
@@ -91,9 +90,7 @@ class sign_in(View):
                     # jwt.encode로 jwt 토큰을 인코딩하고, 이것을 유니코드 문자열로 디코딩
                     access_token = jwt.encode({'token_type': 'access',
                                                'email': request.POST['email'],
-                                                # 'exp': timezone.now().timestamp() + (3600 * 2),      # (3600 * 2) == 2시간
-                                               'exp': timezone.now().timestamp() + (86400 * 14),    # 히히 2주나 줬지롱
-                                               # FIXME 엑세스 토큰 개발 완료시 만료시간 원래대로 돌려두기
+                                               'exp': timezone.now().timestamp() + (3600 * 2),
                                                'iss': 'dong'},      # 토큰 발행자 : dong(김동현)
                                               SECRET_KEY, algorithm="HS256").decode('utf-8')
                     refresh_token = jwt.encode({'token_type': 'refresh',
