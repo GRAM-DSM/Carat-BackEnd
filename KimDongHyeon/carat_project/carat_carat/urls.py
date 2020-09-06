@@ -9,7 +9,7 @@ carat_patterns = [
 caring_patterns = [
     path('', views.create_caring.as_view()),
     path('<int:id>', views.edit_caring.as_view()),
-    path('detail/<id>', views.detail_caring.as_view())
+    path('<id>/detail', views.detail_caring.as_view())
 ]
 
 timeline_patterns = [
@@ -20,12 +20,14 @@ timeline_patterns = [
 
 recaring_patterns = [
     path('', views.create_recaring.as_view()),
-    path('<id>', views.delete_recaring.as_view())
+    path('<id>', views.delete_recaring.as_view()),
+    path('<id>/list', views.read_recaring_list.as_view())
 ]
 
 urlpatterns = [
     path('timeline/', include(timeline_patterns)),
     path('caring/', include(caring_patterns)),
     path('carat/', include(carat_patterns)),
-    path('recaring/', include(recaring_patterns))
+    path('recaring/', include(recaring_patterns)),
+    path('', views.hi.as_view())    # 이스터 에그?
 ]
