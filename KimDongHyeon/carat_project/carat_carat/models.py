@@ -35,15 +35,14 @@ class CaratList(models.Model):
 class Profiles(models.Model):
     user_email = models.OneToOneField(Users, on_delete=models.CASCADE, db_column='user_email', primary_key=True)
     name = models.CharField(max_length=80)
-    profile_image = models.ImageField(upload_to="images/profile")
-    cover_image = models.ImageField(upload_to="images/profile")
-    # profile_image = models.CharField(max_length=120)
-    # cover_image = models.CharField(max_length=120)
+    profile_image = models.CharField(max_length=120)
+    cover_image = models.CharField(max_length=120)
     about_me = models.CharField(max_length=100)
 
     class Meta:
         managed = False
         db_table = 'profiles'
+
 
 
 class FollowList(models.Model):

@@ -38,13 +38,8 @@ class update_profile(View):
     def post(self, request):
         """ 유저의 프로필 정보 수정하기 """
         try:
-            print(request.user.email)
             if Profiles.objects.filter(user_email=request.user.email).exists():
                 profile = Profiles.objects.get(user_email=request.user.email)
-                print('name:', request.POST['name'],
-                      'about_me:', request.POST['about_me'],
-                      '\nprofile_image:', request.FILES['profile_image'],
-                      '\ncover_image:', request.FILES['cover_image'])
                 profile.name = request.POST['name']
                 profile.about_me = request.POST['about_me']
                 profile.profile_image = request.FILES['profile_image']
