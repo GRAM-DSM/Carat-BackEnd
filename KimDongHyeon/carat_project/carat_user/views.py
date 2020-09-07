@@ -22,12 +22,11 @@ def login_decorator(func):
             payload = jwt.decode(access_token, SECRET_KEY, algorithm='HS256')
             request.user = Users.objects.get(email=payload['email'])
         except jwt.exceptions.ExpiredSignatureError:
-            return JsonResponse({'message': '토큰의 서명이 만료되었습니다!'}, status=400)
+            return JsonResponse({'message': '토큰의 서명이 만료되었습니다!'}, status=403)
         except jwt.exceptions.DecodeError:
-            return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=400)
+            return JsonResponse({'message': '존재하지 않는 토큰 값입니다!'}, status=401)
         except Users.DoesNotExist:
-            return JsonResponse({'message': '토큰의 사용자 값이 존재하지 않습니다!'}, status=400)
-
+            return JsonResponse({'message': '토큰의 사용자 값이 존재하지 않습니다!'}, status=404)
         return func(self, request, *args, **kwargs)
     return wrapper
 
@@ -39,26 +38,25 @@ class sign_up(View):
               '\n비밀번호 :', request.POST['password'],
               '\n생성시간 :', time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())))
         try:
-            if Users.objects.filter(email=request.POST['email']).exists():  # 존재하는 이메일인지 확인
-                return JsonResponse({"message": "이미 존재하는 이메일 입니다!(That email is already in use.)"}, status=409)
-
-            password = request.POST['password'].encode('utf-8')  # (비밀번호 암호화1) 입력된 패스워드를 바이트 형태로 인코딩
-            password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # (비밀번호 암호화2) 암호화된 비밀번호 생성
-            password_crypt = password_crypt.decode('utf-8')  # (비밀번호 암호화3) DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
-            users = Users(
-                email=request.POST['email'],
-                hashed_password=password_crypt,    # 암호화된 비밀번호를 저장
-                created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
-            )
-            users.save()
-            Profiles(
-                user_email=users,
-                name=request.POST['name'],
-                profile_image=f'images/profile/carrat_default_icon-0{random.randint(2, 5)}.png',
-                cover_image='images/profile/default_cover.jpg',
-                about_me='이곳에 자기소개를 입력하세요.',
-            ).save()
-            return HttpResponse(status=200)
+            if not Users.objects.filter(email=request.POST['email']).exists():  # 존재하는 이메일인지 확인
+                password = request.POST['password'].encode('utf-8')  # (비밀번호 암호화1) 입력된 패스워드를 바이트 형태로 인코딩
+                password_crypt = bcrypt.hashpw(password, bcrypt.gensalt())  # (비밀번호 암호화2) 암호화된 비밀번호 생성
+                password_crypt = password_crypt.decode('utf-8')  # (비밀번호 암호화3) DB에 저장할 수 있는 유니코드 문자열 형태로 디코딩
+                users = Users(
+                    email=request.POST['email'],
+                    hashed_password=password_crypt,    # 암호화된 비밀번호를 저장
+                    created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
+                )
+                users.save()
+                Profiles(
+                    user_email=users,
+                    name=request.POST['name'],
+                    profile_image=f'images/profile/carrat_default_icon-0{random.randint(2, 5)}.png',
+                    cover_image='images/profile/default_cover.jpg',
+                    about_me='이곳에 자기소개를 입력하세요.',
+                ).save()
+                return HttpResponse(status=201)
+            return JsonResponse({"message": "이미 존재하는 이메일 입니다!(That email is already in use.)"}, status=409)
         except KeyError:
             return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request)"}, status=400)
 
