@@ -68,7 +68,7 @@ class sign_up(View):
                     if target.email == file.split('-')[0]:
                         default_storage.delete('images/profile/' + file)
                 Users.objects.filter(email=request.user.email).delete()
-                return HttpResponse(status=200)
+                return HttpResponse(status=204)
             return JsonResponse({'massage': '이미 존재하지 않는 유저 입니다!(The account does not exist.)'}, status=404)
         except KeyError:
             return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request.)"}, status=400)
