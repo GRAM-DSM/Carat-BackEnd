@@ -61,7 +61,6 @@ class edit_caring(View):
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
                 if target.user_email == Users.objects.get(email=request.user.email):
-                    print('삭제할 캐링:', target)
                     # 이미지도 미디어 폴더에서 삭제
                     for file in default_storage.listdir('images/carings/')[1]:
                         if str(target.id) == file.split('-')[0]:
@@ -81,10 +80,9 @@ class detail_caring(View):
         """ 캐링/리캐링 가져오기(자세히보기) """
         try:
             res = caring_detail(request=request, id=id)
-            print(res)
             if res == -1:
-                return JsonResponse({'message': '해당 캐링을 찾을 수 없습니다!'}, status=404)
+                return JsonResponse({'message': '해당 캐링을 찾을 수 없습니다!(No caring exists to view detail.)'}, status=404)
             return JsonResponse(res, status=200)
         except KeyError:
-            return JsonResponse({"message": "해당 캐링을 가져올 수 없습니다!"}, status=400)
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request.)"}, status=400)
 
