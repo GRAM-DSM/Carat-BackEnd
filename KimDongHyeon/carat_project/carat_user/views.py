@@ -69,9 +69,9 @@ class sign_up(View):
                         default_storage.delete('images/profile/' + file)
                 Users.objects.filter(email=request.user.email).delete()
                 return HttpResponse(status=200)
-            return JsonResponse({'maessage': '이미 존재하지 않는 유저 입니다!()'}, status=404)
+            return JsonResponse({'massage': '이미 존재하지 않는 유저 입니다!(The account does not exist.)'}, status=404)
         except KeyError:
-            return JsonResponse({"message": "해당 유저를 탈퇴할 수 없습니다!"}, status=400)
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request.)"}, status=400)
 
 
 class sign_in(View):
