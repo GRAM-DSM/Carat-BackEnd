@@ -1,14 +1,14 @@
 from .core import *
 
+# TODO request.user => Users.objects.get(email=request.user.email)
+
 
 class create_caring(View):
     @login_decorator
     def post(self, request):
         """ 캐링 생성하기 """
-        print('게시자:', request.user.email, '본문:', request.POST['caring'])
-        print('이미지:', request.FILES)
         caring = Carings(
-            user_email=request.user,
+            user_email=Users.objects.get(email=request.user.email),
             caring=request.POST['caring'],
             image='',
             created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp())),
@@ -30,7 +30,7 @@ class edit_caring(View):
         try:
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
-                if target.user_email == request.user:
+                if target.user_email == Users.objects.get(email=request.user.email):
                     target.caring = request.POST.get('caring')
                     # 일단 기존의 이미지 삭제
                     target.image = ''
@@ -56,7 +56,7 @@ class edit_caring(View):
         try:
             if Carings.objects.filter(id=id).exists():
                 target = Carings.objects.get(id=id)
-                if target.user_email == request.user:
+                if target.user_email == Users.objects.get(email=request.user.email):
                     print('삭제할 캐링:', target)
                     # 이미지도 미디어 폴더에서 삭제
                     for file in default_storage.listdir('images/carings/')[1]:
