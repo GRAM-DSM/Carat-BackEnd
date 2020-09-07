@@ -61,7 +61,7 @@ class sign_up(View):
     def delete(self, request):
         """ 계정 삭제(회원 탈퇴) """
         try:
-            if Users.objects.filter(email=request.user.email):
+            if Users.objects.filter(email=request.user.email).exists():
                 target = Users.objects.get(email=request.user.email)
                 # 삭제할 프로필의 사진들을 미디어 폴더에서 삭제
                 for file in default_storage.listdir('images/profile/')[1]:
