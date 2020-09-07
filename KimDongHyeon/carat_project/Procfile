@@ -1,1 +1,0 @@
-web: gunicorn carat_project.wsgi
