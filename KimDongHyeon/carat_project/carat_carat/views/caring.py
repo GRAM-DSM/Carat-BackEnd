@@ -1,7 +1,5 @@
 from .core import *
 
-# TODO request.user => Users.objects.get(email=request.user.email)
-
 
 class create_caring(View):
     @login_decorator

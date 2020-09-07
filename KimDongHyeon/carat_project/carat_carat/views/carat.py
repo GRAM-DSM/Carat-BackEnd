@@ -11,10 +11,12 @@ class do_carat(View):
             else:
                 return JsonResponse({'message': '캐럿할 리캐링이 존재하지 않습니다!'}, status=404)
         if Carings.objects.filter(id=id).exists():
-            print('캐럿대상 글:', id, ' 캐럿하는 사람:', request.user.email)
-            if CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id)).exists():
+            if CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email),
+                                        caring=Carings.objects.get(id=id)).exists():
                 return JsonResponse({'message': '이미 이캐링에 캐럿하였습니다!'}, status=400)
-            CaratList(carat_user_email=request.user, caring=Carings.objects.get(id=id)).save()
+            CaratList(carat_user_email=Users.objects.get(email=request.user.email),
+                      caring=Carings.objects.get(id=id)
+                      ).save()
             return HttpResponse(status=200)
         return JsonResponse({'message': '캐럿할 캐링이 존재하지 않습니다!'}, status=404)
 
@@ -28,8 +30,8 @@ class do_carat(View):
                 return JsonResponse({'message': '캐럿취소할 리캐링이 존재하지 않습니다!'}, status=404)
         if Carings.objects.filter(id=id).exists():
             print('캐럿취소대상 글:', id, ' 캐럿취소하는 사람:', request.user.email)
-            if CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id)).exists():
-                carat = CaratList.objects.filter(carat_user_email=request.user, caring=Carings.objects.get(id=id))
+            if CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id)).exists():
+                carat = CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id))
                 print('삭제할 캐럿:', carat)
                 carat.delete()
                 return HttpResponse(status=200)
@@ -53,7 +55,7 @@ class read_carat_list(View):
                 profile = Profiles.objects.get(user_email=carat.carat_user_email)
                 is_following = FollowList.objects.filter(
                     followed_user_email=carat.carat_user_email,
-                    follow_user_email=request.user
+                    follow_user_email=Users.objects.get(email=request.user.email)
                 ).exists()
                 res = {
                     "name": profile.name,

@@ -14,7 +14,7 @@ class create_recaring(View):
         if Carings.objects.filter(id=request.POST.get('id')).exists():
             recaring = Recarings(
                 id=recaring_id,
-                user_email=request.user,
+                user_email=Users.objects.get(email=request.user.email),
                 caring=Carings.objects.get(id=request.POST.get('id')),
                 created_at=time.strftime('%Y-%m-%d %I:%M:%S', time.gmtime(timezone.now().timestamp()))
             )
@@ -29,7 +29,7 @@ class delete_recaring(View):
         """ 리캐링 취소하기 """
         if Recarings.objects.filter(id=id).exists():
             target = Recarings.objects.get(id=id)
-            if target.user_email == request.user:
+            if target.user_email == Users.objects.get(email=request.user.email):
                 print('취소할 리캐링:', target)
                 target.delete()
                 return HttpResponse(status=200)
