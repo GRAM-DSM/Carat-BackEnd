@@ -34,7 +34,7 @@ class delete_recaring(View):
             if target.user_email == Users.objects.get(email=request.user.email):
                 target.delete()
                 return HttpResponse(status=204)
-            return JsonResponse({'message': "남이 생성한 캐링을 삭제할 수 없습니다!(You can't delete recaring created by others.)"},
+            return JsonResponse({'message': "남이 생성한 리캐링을 삭제할 수 없습니다!(You can't delete recaring created by others.)"},
                                 status=403)
         return JsonResponse({'message': '삭제할 리캐링이 존재하지 않습니다!(No recaring exists to delete.)'}, status=404)
 
@@ -47,7 +47,8 @@ class read_recaring_list(View):
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
-                return JsonResponse({'message': '리캐링이 존재하지 않습니다!'}, status=404)
+                return JsonResponse({'message': '리캐링 리스트를 볼 리캐링이 존재하지 않습니다!(No recaring exists to view recaring-list.)'},
+                                    status=404)
         if Carings.objects.filter(id=id).exists():
             li = []
             for recaring in Recarings.objects.filter(caring=Carings.objects.get(id=id)):
@@ -65,7 +66,7 @@ class read_recaring_list(View):
                     "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                     "is_follow": is_following
                 }
-                print(res)
                 li.append(res)
             return JsonResponse({'result': li}, status=200)
-        return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return JsonResponse({'message': '리캐링 리스트를 볼 캐링이 존재하지 않습니다!(No caring exists to view recaring-list.)'},
+                            status=404)
