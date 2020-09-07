@@ -15,23 +15,24 @@ class read_profile(View):
     @login_decorator
     def get(self, request, email):
         """ 유저의 프로필 정보 가져오기 """
-        print('가져올 유저:', email)
-        if Profiles.objects.filter(user_email=email).exists():
-            profile = Profiles.objects.get(user_email=email)
-            res = {
-                "user_email": email,
-                "name": profile.name,
-                "about_me": profile.about_me,
-                "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
-                "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.cover_image),
-                "following_count": len(FollowList.objects.filter(follow_user_email=email)),
-                "follower_count": len(FollowList.objects.filter(followed_user_email=email)),
-                "created_at": Users.objects.get(email=email).created_at,
-                "my_self": (True if email == request.user.email else False)
-            }
-            print(res)
-            return JsonResponse(res, status=200)
-        return JsonResponse({'message': '해당 유저의 프로필을 찾을 수 없습니다!'}, status=403)
+        try:
+            if Profiles.objects.filter(user_email=email).exists():
+                profile = Profiles.objects.get(user_email=email)
+                res = {
+                    "user_email": email,
+                    "name": profile.name,
+                    "about_me": profile.about_me,
+                    "profile_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
+                    "cover_image_url": 'http://' + request.get_host() + MEDIA_URL + str(profile.cover_image),
+                    "following_count": len(FollowList.objects.filter(follow_user_email=email)),
+                    "follower_count": len(FollowList.objects.filter(followed_user_email=email)),
+                    "created_at": Users.objects.get(email=email).created_at,
+                    "my_self": (True if email == request.user.email else False)
+                }
+                return JsonResponse(res, status=200)
+            return JsonResponse({'message': '프로필을 볼 계정이 존재하지 않음!(No account exists to view profile)'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request.)"}, status=400)
 
 
 class update_profile(View):
@@ -54,10 +55,10 @@ class update_profile(View):
                     profile.cover_image = profile.user_email.email + '-cover.' + image.name.split('.')[-1]
                     file_upload('images/profile/', profile.cover_image, image)
                 profile.save()
-                return HttpResponse(status=200)
-            return JsonResponse({'message': '해당 유저의 프로필이 존재하지 않습니다!'}, status=404)
-        finally:
-            pass
+                return HttpResponse(status=201)
+            return JsonResponse({'message': '프로필을 수정할 계정이 존재하지 않음!(No account exists to edit profile)'}, status=404)
+        except KeyError:
+            return JsonResponse({"message": "key 값이 잘못되었습니다!(a bad request.)"}, status=400)
 
 
 class following(View):
