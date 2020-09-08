@@ -26,16 +26,15 @@ class do_carat(View):
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
-                return JsonResponse({'message': '캐럿취소할 리캐링이 존재하지 않습니다!'}, status=404)
+                return JsonResponse(
+                    {'message': '캐럿 취소할 리캐링이 존재하지 않습니다!(No recaring exists to cancel carat.)'}, status=404)
         if Carings.objects.filter(id=id).exists():
-            print('캐럿취소대상 글:', id, ' 캐럿취소하는 사람:', request.user.email)
             if CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id)).exists():
                 carat = CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id))
-                print('삭제할 캐럿:', carat)
                 carat.delete()
                 return HttpResponse(status=200)
-            return JsonResponse({'message': '이미 캐럿이 취소되어 있습니다!'}, status=400)
-        return JsonResponse({'message': '캐럿취소할 캐링이 존재하지 않습니다!'}, status=404)
+            return JsonResponse({'message': '이미 캐럿이 취소되어 있습니다!(Already not carated.)'}, status=409)
+        return JsonResponse({'message': '캐럿 취소할 캐링이 존재하지 않습니다!(No caring exists to cancel carat.)'}, status=404)
 
 
 class read_carat_list(View):
@@ -46,9 +45,9 @@ class read_carat_list(View):
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
-                return JsonResponse({'message': '캐럿리스트를 볼 리캐링이 존재하지 않습니다!'}, status=404)
+                return JsonResponse({'message': '캐럿리스트를 볼 리캐링이 존재하지 않습니다!(No recaring exists to view carat-list.)'},
+                                    status=404)
         if Carings.objects.filter(id=id).exists():
-            print('id:', id)
             li = []
             for carat in CaratList.objects.filter(caring=Carings.objects.get(id=id)):
                 profile = Profiles.objects.get(user_email=carat.carat_user_email)
@@ -62,7 +61,6 @@ class read_carat_list(View):
                     "profile_image": 'http://' + request.get_host() + MEDIA_URL + str(profile.profile_image),
                     "is_follow": is_following
                 }
-                print(res)
                 li.append(res)
             return JsonResponse({'result': li}, status=200)
-        return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!'}, status=404)
+        return JsonResponse({'message': '캐럿리스트를 볼 캐링이 존재하지 않습니다!(No caring exists to view carat-list.)'}, status=404)
