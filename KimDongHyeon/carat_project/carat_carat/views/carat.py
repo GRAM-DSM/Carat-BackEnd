@@ -9,15 +9,14 @@ class do_carat(View):
             if Recarings.objects.filter(id=id).exists():
                 id = Recarings.objects.get(id=id).caring.id
             else:
-                return JsonResponse({'message': '캐럿할 리캐링이 존재하지 않습니다!(No recaring exists to carat.)!'}, status=404)
+                return JsonResponse({'message': '캐럿할 리캐링이 존재하지 않습니다!(No recaring exists to carat.)'}, status=404)
         if Carings.objects.filter(id=id).exists():
-            if CaratList.objects.filter(carat_user_email=Users.objects.get(email=request.user.email),
-                                        caring=Carings.objects.get(id=id)).exists():
-                return JsonResponse({'message': '이미 이캐링에 캐럿하였습니다!'}, status=403)
-            CaratList(carat_user_email=Users.objects.get(email=request.user.email),
-                      caring=Carings.objects.get(id=id)
-                      ).save()
-            return HttpResponse(status=200)
+            if not CaratList.objects.filter(
+                    carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id)).exists():
+                CaratList(
+                    carat_user_email=Users.objects.get(email=request.user.email), caring=Carings.objects.get(id=id)).save()
+                return HttpResponse(status=200)
+            return JsonResponse({'message': '이미 이캐링에 캐럿하였습니다!(Already carated.)'}, status=409)
         return JsonResponse({'message': '캐럿할 캐링이 존재하지 않습니다!(No caring exists to carat.)'}, status=404)
 
     @login_decorator
